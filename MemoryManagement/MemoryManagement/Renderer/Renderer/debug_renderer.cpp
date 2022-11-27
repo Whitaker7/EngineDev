@@ -42,19 +42,19 @@ namespace end
 		const colored_vertex* get_line_verts()
 		{ 
 			//TODO Returns the line vert array pointer
-			return NULL;
+			return &line_verts[0];
 		}
 
 		size_t get_line_vert_count() 
 		{ 
 			//TODO Returns how many vertices there are now
-			return 0;
+			return line_vert_count;
 		}
 
 		size_t get_line_vert_capacity()
 		{
 			//TODO returns the maximum size the line vert array
-			return 0;
+			return MAX_LINE_VERTS;
 		}
 	}
 }
