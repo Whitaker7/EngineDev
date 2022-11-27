@@ -24,11 +24,19 @@ namespace end
 		void add_line(float3 point_a, float3 point_b, float4 color_a, float4 color_b)
 		{
 			//TODO Add points to debug_verts, increments debug_vert_count
+			line_verts[line_vert_count].pos = point_a;
+			line_verts[line_vert_count].color = color_a;
+			line_vert_count++;
+			line_verts[line_vert_count].pos = point_b;
+			line_verts[line_vert_count].color = color_a;
+			line_vert_count++;
+
 		}
 
 		void clear_lines()
 		{
 			//TODO Resets debug_vert_count to 0
+			line_vert_count = 0;
 		}
 
 		const colored_vertex* get_line_verts()
