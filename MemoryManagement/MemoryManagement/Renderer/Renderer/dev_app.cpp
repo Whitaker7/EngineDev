@@ -9,20 +9,25 @@ namespace end
 {
 	double delta_time = 0.0;
 	float4 color(0, 1.0f, 0.1f, 1.0f);
+	float4 white(1, 1, 1, 1);
 	bool colorChange = true; //allows for continuos color changing
 	float3 gravity(0, -9.8f, 0);
+	int index = -1;
+	float creationTimerHolder = 0.05f;
+	float creationTimer = creationTimerHolder;
 
 	struct Particle
 	{
 		float3 pos;
 		float3 prev_pos;
 		float4 color;
+		float timer = 0.5f;
 		float3 velocity;
 	};
 
 	Particle particle;
 
-	end::sorted_pool_t<Particle, 1024> sorted_pool;
+	end::sorted_pool_t<Particle, 256> sorted_pool;
 	//make free pool
 	end::pool_t<Particle, 1024> free_pool;
 
@@ -58,6 +63,16 @@ namespace end
 		return std::min(1.0 / 15.0, elapsed_seconds.count());
 	}
 
+	//creats a randon float between min and max
+	float Randf(float min, float max)
+	{
+		float ran = rand() / (float)RAND_MAX;
+		return (max - min) * ran + min;
+	}
+	/*void SwapPartPos(Particle& part)
+	{
+		part.
+	}*/
 	
 
 	void dev_app_t::update()
@@ -65,6 +80,65 @@ namespace end
 		delta_time = calc_delta_time(); //delta time just equals the amount of time between each frames
 		
 		//i could make a "timer" but float timer += delta time each frame
+
+		//sorted pool
+#pragma region Draw Sorted Particles
+
+		//for every particle we will just need to apply position and color
+		//free list this shoudl be ontop
+		//create a variable for gravity
+		
+		//initialize the sorted pool list
+		creationTimer -= delta_time;
+		if (creationTimer <= 0)
+		{
+			for (int i = 0; i < 7; i++)
+			{
+				index = sorted_pool.alloc();
+				if (index <= -1)
+				{
+					break;
+				}
+				sorted_pool[index + i].color = white;
+				sorted_pool[index + i].velocity = float3(Randf(-2, 2), 10, Randf(-2, 2));
+				sorted_pool[index + i].pos = float3(0, 0, 0);
+				sorted_pool[index + i].prev_pos = float3(0, 0, 0);
+			}
+			creationTimer = creationTimerHolder;
+		}
+
+
+
+		//end::debug_renderer::add_line(sorted_pool[0].pos, sorted_pool[0].prev_pos, sorted_pool[0].color);
+
+		for (int i = 0; i < sorted_pool.size(); i++)
+		{
+			end::debug_renderer::add_line(sorted_pool[i].pos, sorted_pool[i].prev_pos, sorted_pool[i].color);
+			float3 posHolder = sorted_pool[i].pos; //store current position of the head of the particle
+			sorted_pool[i].pos += sorted_pool[i].velocity * delta_time; //add velocity to the particle head(pos)
+			sorted_pool[i].velocity += gravity * delta_time; //slow velocity due to gravity
+			sorted_pool[i].prev_pos = posHolder; //set particle tail to previous head position
+
+			sorted_pool[i].timer -= delta_time;
+			if (sorted_pool[i].pos.y <= 0)
+			{
+				sorted_pool.free(i);
+			}
+			//sorted_pool.free(i);
+		}
+		
+		//initialize the fixed pool list
+		
+
+
+		//go through the sorted pool size
+		//add line 
+		//
+		//
+
+
+#pragma endregion
+
 
 		//This drawn the green checkmark
 		/*end::debug_renderer::add_line(float3(-2, 0, 0), float3(0, -3, 0), color);
@@ -148,26 +222,6 @@ namespace end
 			colorChange = false;
 		}
 #pragma endregion
-
-		//sorted pool
-#pragma region Draw Sorted Particles
-
-		//for every particle we will just need to apply position and color
-		//free list this shoudl be ontop
-		//create a variable for gravity
-		//initialize the sorted pool list
-		//initialize the fixed pool list
-		
-
-
-		//go through the sorted pool size
-		//add line 
-		//
-		//
-
-
-#pragma endregion
-
 
 	}
 }

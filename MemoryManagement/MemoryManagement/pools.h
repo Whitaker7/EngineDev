@@ -29,12 +29,12 @@ namespace end
 		const T& operator[](int16_t index)const { return pool[index]; }
 
 		// Returns the index of the first inactive element 
-		//   and updates the active count
+		// and updates the active count
 		// Returns -1 if no inactive elements remain
 		int16_t alloc() { 
 			
 			
-			if (active_count > N)
+			if (active_count >= N)
 			{
 				return -1;
 			}
