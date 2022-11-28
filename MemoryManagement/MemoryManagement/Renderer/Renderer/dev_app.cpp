@@ -10,6 +10,7 @@ namespace end
 	double delta_time = 0.0;
 	float4 color(0, 1.0f, 0.1f, 1.0f);
 	bool colorChange = true; //allows for continuos color changing
+	float3 gravity(0, -9.8f, 0);
 
 	struct Particle
 	{
@@ -61,12 +62,15 @@ namespace end
 
 	void dev_app_t::update()
 	{
-		delta_time = calc_delta_time();
+		delta_time = calc_delta_time(); //delta time just equals the amount of time between each frames
+		
+		//i could make a "timer" but float timer += delta time each frame
 
 		//This drawn the green checkmark
 		/*end::debug_renderer::add_line(float3(-2, 0, 0), float3(0, -3, 0), color);
 		end::debug_renderer::add_line(float3(0, -3, 0), float3(3, 4, 0), color);*/
-		 
+#pragma region Grid
+
 		//this draws the grid horizontal
 		end::debug_renderer::add_line(float3(-10, 0, 10), float3(10, 0, 10), color);
 		end::debug_renderer::add_line(float3(-10, 0, 9), float3(10, 0, 9), color);
@@ -114,6 +118,8 @@ namespace end
 		end::debug_renderer::add_line(float3(-9, 0, 10), float3(-9, 0, -10), color);
 		end::debug_renderer::add_line(float3(-10, 0, 10), float3(-10, 0, -10), color);
 
+#pragma endregion
+
 
 		//TODO do you Updates here
 
@@ -143,8 +149,22 @@ namespace end
 		}
 #pragma endregion
 
-
+		//sorted pool
 #pragma region Draw Sorted Particles
+
+		//for every particle we will just need to apply position and color
+		//free list this shoudl be ontop
+		//create a variable for gravity
+		//initialize the sorted pool list
+		//initialize the fixed pool list
+		
+
+
+		//go through the sorted pool size
+		//add line 
+		//
+		//
+
 
 #pragma endregion
 
