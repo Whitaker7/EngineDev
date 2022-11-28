@@ -82,12 +82,10 @@ namespace end
 		//i could make a "timer" but float timer += delta time each frame
 
 		//sorted pool
-#pragma region Draw Sorted Particles
-
+#pragma region SortedPool
 		//for every particle we will just need to apply position and color
 		//free list this shoudl be ontop
-		//create a variable for gravity
-		
+
 		//initialize the sorted pool list
 		creationTimer -= delta_time;
 		if (creationTimer <= 0)
@@ -128,10 +126,12 @@ namespace end
 		}
 
 
-
-
 #pragma endregion
 
+
+
+
+		
 
 		//This drawn the green checkmark
 		/*end::debug_renderer::add_line(float3(-2, 0, 0), float3(0, -3, 0), color);
