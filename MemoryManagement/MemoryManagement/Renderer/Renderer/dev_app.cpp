@@ -32,6 +32,8 @@ namespace end
 		return std::min(1.0 / 15.0, elapsed_seconds.count());
 	}
 
+	
+
 	void dev_app_t::update()
 	{
 		delta_time = calc_delta_time();
@@ -90,7 +92,7 @@ namespace end
 
 		//TODO do you Updates here
 
-
+		
 
 
 		//change a color over time

@@ -5,7 +5,17 @@
 
 namespace end
 {
+	struct Particle
+	{
+		float3 pos;
+		float3 prev_pos;
+		float4 color;
+	};
+
+	//int16_t N = 1000;
+
 	template<typename T, int16_t N>
+	//std::array<Particle, N> particles;
 	class sorted_pool_t
 	{
 	public:
@@ -27,17 +37,23 @@ namespace end
 		//   and updates the active count
 		// Returns -1 if no inactive elements remain
 		int16_t alloc() { 
-			if (active_count == 0)
+			
+			
+			if (active_count > N)
 			{
 				return -1;
 			}
-			return pool[--active_count];
+			//should return active count THEN update
+			//when i can test make sure ^^ that is what happens. other wise use another variable to store 
+			//active count. update active count and return stored count
+
+			return active_count++;
 		}
 
 		// Moves the element at 'index' to the inactive
 		// region and updates the active count
 		void free(int16_t index){
-			pool[index] = pool[active_count--];
+			std::swap(pool[index], pool[active_count--]); // maybe need --active_count
 		}
 
 	private:
@@ -53,27 +69,48 @@ namespace end
 		public:
 		// Todo: Implement the function bodies
 
+		//rewatch lecture when i actually go to implement to refresh
+
 		// Removes the first element from the free list and returns its index
 		// Returns -1 if no free elements remain
 		int16_t alloc()
 		{
+			int16_t index = free_start;
+
+			if (index > N)
+			{
+				retrn - 1;
+			}
+			free_start = pool[index].next;
+			return index;
 		}
 
 		// Adds 'index' to the free list
 		void free(int16_t index)
 		{
+			pool[index].next = free_start;
+			free_start = index;
+
 		}
 
 		// Initializes the free list
 		pool_t()
 		{
+			for (int i = 0; i < N; i++)
+			{
+				pool[i].next = i + 1;
+			}
 		}
 
 		// Returns the value at the specified index
-		T& operator[](int16_t index) { }
+		T& operator[](int16_t index) {
+			return pool[index].value;
+		}
 
 		// Returns the value at the specified index
-		const T& operator[](int16_t index)const { }
+		const T& operator[](int16_t index)const { 
+			return pool[index].value;
+		}
 
 	private:
 
