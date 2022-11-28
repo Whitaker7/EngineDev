@@ -84,7 +84,6 @@ namespace end
 		{
 			pool[index].next = free_start;
 			free_start = index;
-
 		}
 
 		// Initializes the free list

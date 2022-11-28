@@ -106,6 +106,7 @@ namespace end
 				sorted_pool[index + i].pos = float3(0, 0, 0);
 				sorted_pool[index + i].prev_pos = float3(0, 0, 0);
 			}
+			creationTimer = creationTimerHolder; //resets it for all pools
 		}
 
 
@@ -135,43 +136,14 @@ namespace end
 		emitters[0].spawn_color = float4(1.0f, 0, 0, 1.0f);
 		emitters[0].spawn_pos = float3(7.5f, 0, 7.5f);
 
-		if (creationTimer <= 0)
-		{
-			for (int i = 0; i < 7; i++)
-			{
-				freeIndex = free_pool.alloc();
-				if (freeIndex <= -1)
-				{
-					break;
-				}
-				free_pool[emitters[0].indices[freeIndex + i]].color = emitters[0].spawn_color;
-				free_pool[emitters[0].indices[freeIndex + i]].velocity = float3(Randf(-2, 2), 10, Randf(-2, 2));
-				free_pool[emitters[0].indices[freeIndex + i]].pos = emitters[0].spawn_pos;
-				free_pool[emitters[0].indices[freeIndex + i]].prev_pos = emitters[0].spawn_pos;
-				free_pool[emitters[0].indices[freeIndex + i]].prev_pos.y = emitters[0].spawn_pos.y - 0.2f;;
-			}
-			creationTimer = creationTimerHolder; //resets it for all pools
-		}
+		free_pool[0].color = emitters[0].spawn_color;
+		free_pool[0].pos = emitters[0].spawn_pos;
+		free_pool[0].prev_pos = emitters[0].spawn_pos;
+		free_pool[0].prev_pos.y = emitters[0].spawn_pos.y + 10.0f;
+		free_pool[0].velocity = float3(Randf(-2, 2), 5, Randf(-2, 2));
 
 
-
-		//end::debug_renderer::add_line(sorted_pool[0].pos, sorted_pool[0].prev_pos, sorted_pool[0].color);
-
-		for (int i = 0; i < emitters[0].indices.size(); i++)
-		{
-			end::debug_renderer::add_line(free_pool[emitters[0].indices[i]].pos, free_pool[emitters[0].indices[i]].prev_pos, free_pool[emitters[0].indices[i]].color);
-			float3 posHolder = free_pool[emitters[0].indices[i]].pos; //store current position of the head of the particle
-			free_pool[emitters[0].indices[i]].pos += sorted_pool[emitters[0].indices[i]].velocity * delta_time; //add velocity to the particle head(pos)
-			free_pool[emitters[0].indices[i]].velocity += gravity * delta_time; //slow velocity due to gravity
-			free_pool[emitters[0].indices[i]].prev_pos = posHolder; //set particle tail to previous head position
-
-			free_pool[emitters[0].indices[i]].timer -= delta_time;
-			if (free_pool[emitters[0].indices[i]].pos.y <= 0)
-			{
-				free_pool.free(emitters[0].indices[i]);
-			}
-			//sorted_pool.free(i);
-		}
+		end::debug_renderer::add_line(free_pool[0].pos, free_pool[0].prev_pos, free_pool[0].color);
 
 #pragma endregion
 
