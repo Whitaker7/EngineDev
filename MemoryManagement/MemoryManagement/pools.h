@@ -5,12 +5,7 @@
 
 namespace end
 {
-	struct Particle
-	{
-		float3 pos;
-		float3 prev_pos;
-		float4 color;
-	};
+	
 
 	//int16_t N = 1000;
 
@@ -79,7 +74,7 @@ namespace end
 
 			if (index > N)
 			{
-				retrn - 1;
+				return - 1;
 			}
 			free_start = pool[index].next;
 			return index;

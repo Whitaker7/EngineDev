@@ -11,6 +11,31 @@ namespace end
 	float4 color(0, 1.0f, 0.1f, 1.0f);
 	bool colorChange = true; //allows for continuos color changing
 
+	struct Particle
+	{
+		float3 pos;
+		float3 prev_pos;
+		float4 color;
+		float3 velocity;
+	};
+
+	Particle particle;
+
+	end::sorted_pool_t<Particle, 1024> sorted_pool;
+	//make free pool
+	end::pool_t<Particle, 1024> free_pool;
+
+	//make emitters
+	struct Emitter
+	{
+		float3 spawn_pos;
+		float4 spawn_color;
+		// indices into the shared_pool 
+		sorted_pool_t<int16_t, 256> indices;
+	};
+
+	Emitter emitters[4];
+
 	double dev_app_t::get_delta_time()const
 	{
 		return delta_time;
@@ -117,6 +142,12 @@ namespace end
 			colorChange = false;
 		}
 #pragma endregion
+
+
+#pragma region Draw Sorted Particles
+
+#pragma endregion
+
 
 	}
 }
