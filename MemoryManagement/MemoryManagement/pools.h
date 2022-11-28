@@ -64,7 +64,6 @@ namespace end
 		public:
 		// Todo: Implement the function bodies
 
-		//rewatch lecture when i actually go to implement to refresh
 
 		// Removes the first element from the free list and returns its index
 		// Returns -1 if no free elements remain
@@ -72,7 +71,7 @@ namespace end
 		{
 			int16_t index = free_start;
 
-			if (index > N)
+			if (index >= N)
 			{
 				return - 1;
 			}

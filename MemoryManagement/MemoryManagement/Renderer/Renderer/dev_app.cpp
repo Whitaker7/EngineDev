@@ -126,15 +126,8 @@ namespace end
 			}
 			//sorted_pool.free(i);
 		}
-		
-		//initialize the fixed pool list
-		
 
 
-		//go through the sorted pool size
-		//add line 
-		//
-		//
 
 
 #pragma endregion
