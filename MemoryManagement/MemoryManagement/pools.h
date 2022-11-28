@@ -36,7 +36,9 @@ namespace end
 
 		// Moves the element at 'index' to the inactive
 		// region and updates the active count
-		void free(int16_t index){}
+		void free(int16_t index){
+			pool[index] = pool[active_count--];
+		}
 
 	private:
 
