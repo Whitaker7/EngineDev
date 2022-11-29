@@ -95,7 +95,7 @@ namespace end
 		creationTimer -= delta_time;
 		if (creationTimer <= 0)
 		{
-			for (int i = 0; i < 15; i++)
+			for (int i = 0; i < 7; i++)
 			{
 				index = sorted_pool.alloc();
 				if (index <= -1)
