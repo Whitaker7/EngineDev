@@ -48,7 +48,7 @@ namespace end
 		// Moves the element at 'index' to the inactive
 		// region and updates the active count
 		void free(int16_t index){
-			std::swap(pool[index], pool[active_count--]); // maybe need --active_count
+			std::swap(pool[index], pool[--active_count]); // maybe need --active_count
 		}
 
 	private:
@@ -71,7 +71,9 @@ namespace end
 		{
 			int16_t index = free_start;
 
-			if (index >= N)
+			//final entry in freelist is negative one
+			//so when freelist is full freestart will be -1
+			if (index == -1)
 			{
 				return - 1;
 			}
@@ -93,6 +95,7 @@ namespace end
 			{
 				pool[i].next = i + 1;
 			}
+			pool[N - 1].next = -1;
 		}
 
 		// Returns the value at the specified index
