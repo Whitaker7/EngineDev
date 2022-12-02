@@ -150,6 +150,7 @@
     <ClInclude Include="d3d11_renderer_impl.h" />
     <ClInclude Include="debug_renderer.h" />
     <ClInclude Include="dev_app.h" />
+    <ClInclude Include="Gateware.h" />
     <ClInclude Include="math_types.h" />
     <ClInclude Include="renderer.h" />
     <ClInclude Include="view.h" />

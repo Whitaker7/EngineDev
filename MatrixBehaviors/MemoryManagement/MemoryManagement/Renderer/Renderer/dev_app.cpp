@@ -3,20 +3,32 @@
 #include "debug_renderer.h"
 #include <iostream>
 #include "pools.h"
+#include <DirectXMath.h>
+using namespace DirectX;
 //TODO include debug_renderer.h and pools.h and anything else you might need here
 
 namespace end
 {
 	double delta_time = 0.0;
-	float4 color(0, 1.0f, 0.1f, 1.0f);
+	float4 color(1.0f, 1.0f, 1.0f, 1.0f);
 	float4 white(1, 1, 1, 1);
-	bool colorChange = true; //allows for continuos color changing
+	bool colorChange = true; //allows for continous color changing
 	float3 gravity(0, -9.8f, 0);
 	int index = -1;
 	int freeIndex = -1;
 	int freeSortIndex = -1;
 	float creationTimerHolder = 0.05f;//set to 0.05 for best emission
 	float creationTimer = creationTimerHolder;
+
+
+
+
+	XMMATRIX player = XMMatrixIdentity();
+	XMFLOAT4X4 player44;
+	XMMATRIX lookAt = XMMatrixIdentity();
+	XMFLOAT4X4 lookAt44;
+	XMMATRIX turnTo = XMMatrixIdentity();
+	XMFLOAT4X4 turnTo44;
 
 	struct Particle
 	{
@@ -87,140 +99,140 @@ namespace end
 		//i could make a "timer" but float timer += delta time each frame
 
 		//sorted pool
-#pragma region SortedPool
-		//for every particle we will just need to apply position and color
-		//free list this shoudl be ontop
-
-		//initialize the sorted pool list
-		creationTimer -= delta_time;
-		if (creationTimer <= 0)
-		{
-			for (int i = 0; i < 7; i++)
-			{
-				index = sorted_pool.alloc();
-				if (index <= -1)
-				{
-					sorted_pool.free(index);
-					break;
-				}
-				sorted_pool[index + i].color = white;
-				sorted_pool[index + i].velocity = float3(Randf(-2, 2), 10, Randf(-2, 2));
-				sorted_pool[index + i].pos = float3(0, 0, 0);
-				sorted_pool[index + i].prev_pos = float3(0, 0, 0);
-			}
-			//creationTimer = creationTimerHolder; //resets it for all pools
-		}
-
-
-
-		//end::debug_renderer::add_line(sorted_pool[0].pos, sorted_pool[0].prev_pos, sorted_pool[0].color);
-
-		for (int i = 0; i < sorted_pool.size(); i++)
-		{
-			end::debug_renderer::add_line(sorted_pool[i].pos, sorted_pool[i].prev_pos, sorted_pool[i].color);
-			sorted_pool[i].prev_pos = sorted_pool[i].pos; //store current position of the head of the particle
-			sorted_pool[i].pos += sorted_pool[i].velocity * delta_time; //add velocity to the particle head(pos)
-			sorted_pool[i].velocity += gravity * delta_time; //slow velocity due to gravity
-
-			//	sorted_pool[i].timer -= delta_time;
-			if (sorted_pool[i].pos.y <= 0)
-			{
-				sorted_pool.free(i);
-			}
-		}
-
-
-#pragma endregion
-
-		//freeList
-#pragma region FreeList
-
-		//set emitters spawn location and color
-		//top right
-		emitters[0].spawn_color = float4(1.0f, 0, 0, 1.0f);
-		emitters[0].spawn_pos = float3(7.5f, 0, 7.5f);
-		//top left
-		emitters[1].spawn_color = float4(0.0f, 1.0f, 0, 1.0f);
-		emitters[1].spawn_pos = float3(-7.5f, 0, 7.5f);
-		//bottom right
-		emitters[2].spawn_color = float4(1.0f, 0, 1.0f, 1.0f);
-		emitters[2].spawn_pos = float3(7.5f, 0, -7.5f);
-		//bottom left
-		emitters[3].spawn_color = float4(0, 0, 1.0f, 1.0f);
-		emitters[3].spawn_pos = float3(-7.5f, 0, -7.5f);
-
-		if (creationTimer <= 0)
-		{
-			for (int u = 0; u < 4; u++)
-			{
-				for (int i = 0; i < 7; i++)
-				{
-					freeIndex = free_pool.alloc();
-					freeSortIndex = emitters[u].indices.alloc();
-					//check that both freeindex and freesortindex are valid here
-					//if either is invalid the other needs to be freed
-					if (freeIndex == -1 && freeSortIndex > -1)
-					{
-						emitters[u].indices.free(freeSortIndex);
-						break;
-					}
-					if (freeSortIndex == -1 && freeIndex > -1)
-					{
-						free_pool.free(freeIndex);
-						break;
-					}
-					if (freeIndex < 0 && freeSortIndex < 0)
-					{
-						break;
-					}
-					emitters[u].indices[freeSortIndex] = freeIndex;
-
-					Particle& part = free_pool[freeIndex];
-
-					//free_pool[freeIndex].color = emitters[0].spawn_color;
-					//free_pool[freeIndex].pos = emitters[0].spawn_pos;
-					////free_pool[freeIndex].prev_pos = float3(Randf(-10, 10), 3, Randf(-10, 10));
-					//free_pool[freeIndex].prev_pos = emitters[0].spawn_pos;
-					//free_pool[freeIndex].velocity = float3(Randf(-2, 2), 10, Randf(-2, 2));
-
-					part.color = emitters[u].spawn_color;
-					part.pos = emitters[u].spawn_pos;
-					//part.prev_pos = float3(Randf(-10, 10), 3, Randf(-10, 10));
-					part.prev_pos = emitters[u].spawn_pos;
-					part.velocity = float3(Randf(-2, 2), 10, Randf(-2, 2));
-				}
-
-				creationTimer = creationTimerHolder;
-
-			}
-		}
-
-		for (int u = 0; u  < 4; u ++)
-		{
-			for (int i = 0; i < emitters[u].indices.size(); i++)
-			{
-				int16_t nFreeIndex = emitters[u].indices[i]; // n-prefix stands for "int" (for some reason)
-				Particle& particle = free_pool[nFreeIndex];  // this is a reference to a particle, so it works like a pointer, we are modifying the source and not a copy
-
-				//end::debug_renderer::add_line(free_pool[emitters[0].indices[i]].pos, free_pool[emitters[0].indices[i]].prev_pos, free_pool[emitters[0].indices[i]].color);
-				//	float3 posHolder = free_pool[emitters[0].indices[i]].pos; //store current position of the head of the particle
-				//	free_pool[emitters[0].indices[i]].pos += free_pool[emitters[0].indices[i]].velocity * delta_time; //add velocity to the particle head(pos)
-				//	free_pool[emitters[0].indices[i]].velocity += gravity * delta_time; //slow velocity due to gravity
-				//	free_pool[emitters[0].indices[i]].prev_pos = posHolder; //set particle tail to previous head position
-
-				end::debug_renderer::add_line(particle.pos, particle.prev_pos, particle.color);
-				particle.prev_pos = particle.pos; //store current position of the head of the particle
-				particle.pos += particle.velocity * delta_time; //add velocity to the particle head(pos)
-				particle.velocity += gravity * delta_time; //slow velocity due to gravity
-
-				//sorted_pool[i].timer -= delta_time;
-				if (particle.pos.y <= 0)
-				{
-					free_pool.free(nFreeIndex);
-					emitters[u].indices.free(i);
-				}
-			}
-		}
+//#pragma region SortedPool
+//		//for every particle we will just need to apply position and color
+//		//free list this shoudl be ontop
+//
+//		//initialize the sorted pool list
+//		creationTimer -= delta_time;
+//		if (creationTimer <= 0)
+//		{
+//			for (int i = 0; i < 7; i++)
+//			{
+//				index = sorted_pool.alloc();
+//				if (index <= -1)
+//				{
+//					sorted_pool.free(index);
+//					break;
+//				}
+//				sorted_pool[index + i].color = white;
+//				sorted_pool[index + i].velocity = float3(Randf(-2, 2), 10, Randf(-2, 2));
+//				sorted_pool[index + i].pos = float3(0, 0, 0);
+//				sorted_pool[index + i].prev_pos = float3(0, 0, 0);
+//			}
+//			//creationTimer = creationTimerHolder; //resets it for all pools
+//		}
+//
+//
+//
+//		//end::debug_renderer::add_line(sorted_pool[0].pos, sorted_pool[0].prev_pos, sorted_pool[0].color);
+//
+//		for (int i = 0; i < sorted_pool.size(); i++)
+//		{
+//			end::debug_renderer::add_line(sorted_pool[i].pos, sorted_pool[i].prev_pos, sorted_pool[i].color);
+//			sorted_pool[i].prev_pos = sorted_pool[i].pos; //store current position of the head of the particle
+//			sorted_pool[i].pos += sorted_pool[i].velocity * delta_time; //add velocity to the particle head(pos)
+//			sorted_pool[i].velocity += gravity * delta_time; //slow velocity due to gravity
+//
+//			//	sorted_pool[i].timer -= delta_time;
+//			if (sorted_pool[i].pos.y <= 0)
+//			{
+//				sorted_pool.free(i);
+//			}
+//		}
+//
+//
+//#pragma endregion
+//
+//		//freeList
+//#pragma region FreeList
+//
+//		//set emitters spawn location and color
+//		//top right
+//		emitters[0].spawn_color = float4(1.0f, 0, 0, 1.0f);
+//		emitters[0].spawn_pos = float3(7.5f, 0, 7.5f);
+//		//top left
+//		emitters[1].spawn_color = float4(0.0f, 1.0f, 0, 1.0f);
+//		emitters[1].spawn_pos = float3(-7.5f, 0, 7.5f);
+//		//bottom right
+//		emitters[2].spawn_color = float4(1.0f, 0, 1.0f, 1.0f);
+//		emitters[2].spawn_pos = float3(7.5f, 0, -7.5f);
+//		//bottom left
+//		emitters[3].spawn_color = float4(0, 0, 1.0f, 1.0f);
+//		emitters[3].spawn_pos = float3(-7.5f, 0, -7.5f);
+//
+//		if (creationTimer <= 0)
+//		{
+//			for (int u = 0; u < 4; u++)
+//			{
+//				for (int i = 0; i < 7; i++)
+//				{
+//					freeIndex = free_pool.alloc();
+//					freeSortIndex = emitters[u].indices.alloc();
+//					//check that both freeindex and freesortindex are valid here
+//					//if either is invalid the other needs to be freed
+//					if (freeIndex == -1 && freeSortIndex > -1)
+//					{
+//						emitters[u].indices.free(freeSortIndex);
+//						break;
+//					}
+//					if (freeSortIndex == -1 && freeIndex > -1)
+//					{
+//						free_pool.free(freeIndex);
+//						break;
+//					}
+//					if (freeIndex < 0 && freeSortIndex < 0)
+//					{
+//						break;
+//					}
+//					emitters[u].indices[freeSortIndex] = freeIndex;
+//
+//					Particle& part = free_pool[freeIndex];
+//
+//					//free_pool[freeIndex].color = emitters[0].spawn_color;
+//					//free_pool[freeIndex].pos = emitters[0].spawn_pos;
+//					////free_pool[freeIndex].prev_pos = float3(Randf(-10, 10), 3, Randf(-10, 10));
+//					//free_pool[freeIndex].prev_pos = emitters[0].spawn_pos;
+//					//free_pool[freeIndex].velocity = float3(Randf(-2, 2), 10, Randf(-2, 2));
+//
+//					part.color = emitters[u].spawn_color;
+//					part.pos = emitters[u].spawn_pos;
+//					//part.prev_pos = float3(Randf(-10, 10), 3, Randf(-10, 10));
+//					part.prev_pos = emitters[u].spawn_pos;
+//					part.velocity = float3(Randf(-2, 2), 10, Randf(-2, 2));
+//				}
+//
+//				creationTimer = creationTimerHolder;
+//
+//			}
+//		}
+//
+//		for (int u = 0; u  < 4; u ++)
+//		{
+//			for (int i = 0; i < emitters[u].indices.size(); i++)
+//			{
+//				int16_t nFreeIndex = emitters[u].indices[i]; // n-prefix stands for "int" (for some reason)
+//				Particle& particle = free_pool[nFreeIndex];  // this is a reference to a particle, so it works like a pointer, we are modifying the source and not a copy
+//
+//				//end::debug_renderer::add_line(free_pool[emitters[0].indices[i]].pos, free_pool[emitters[0].indices[i]].prev_pos, free_pool[emitters[0].indices[i]].color);
+//				//	float3 posHolder = free_pool[emitters[0].indices[i]].pos; //store current position of the head of the particle
+//				//	free_pool[emitters[0].indices[i]].pos += free_pool[emitters[0].indices[i]].velocity * delta_time; //add velocity to the particle head(pos)
+//				//	free_pool[emitters[0].indices[i]].velocity += gravity * delta_time; //slow velocity due to gravity
+//				//	free_pool[emitters[0].indices[i]].prev_pos = posHolder; //set particle tail to previous head position
+//
+//				end::debug_renderer::add_line(particle.pos, particle.prev_pos, particle.color);
+//				particle.prev_pos = particle.pos; //store current position of the head of the particle
+//				particle.pos += particle.velocity * delta_time; //add velocity to the particle head(pos)
+//				particle.velocity += gravity * delta_time; //slow velocity due to gravity
+//
+//				//sorted_pool[i].timer -= delta_time;
+//				if (particle.pos.y <= 0)
+//				{
+//					free_pool.free(nFreeIndex);
+//					emitters[u].indices.free(i);
+//				}
+//			}
+//		}
 		
 
 
@@ -288,12 +300,28 @@ namespace end
 
 		//TODO do you Updates here
 
-		
+		//draws player
+		XMStoreFloat4x4(&player44, player);
+		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._41 + 1.0f, player44._42, player44._43), float4(1,0,0,1));
+		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._41, player44._42 + 1.0f, player44._43), float4(0,1,0,1));
+		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._41, player44._42, player44._43 + 1.0f), float4(0,0,1,1));
+		//draws lookat
+		lookAt = XMMatrixTranslation(-5.0f, 2.0f, -5.0f);
+		XMStoreFloat4x4(&lookAt44, lookAt);
+		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41 + 1.0f, lookAt44._42, lookAt44._43), float4(1, 0, 0, 1));
+		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41, lookAt44._42 + 1.0f, lookAt44._43), float4(0, 1, 0, 1));
+		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41, lookAt44._42, lookAt44._43 + 1.0f), float4(0, 0, 1, 1));
+		//draws turnto
+		turnTo = XMMatrixTranslation(turnTo44._41 + 0.01f, 2.0f, 5.0f);
+		XMStoreFloat4x4(&turnTo44, turnTo);
+		end::debug_renderer::add_line(float3(turnTo44._41, turnTo44._42, turnTo44._43), float3(turnTo44._41 + 1.0f, turnTo44._42, turnTo44._43), float4(1, 0, 0, 1));
+		end::debug_renderer::add_line(float3(turnTo44._41, turnTo44._42, turnTo44._43), float3(turnTo44._41, turnTo44._42 + 1.0f, turnTo44._43), float4(0, 1, 0, 1));
+		end::debug_renderer::add_line(float3(turnTo44._41, turnTo44._42, turnTo44._43), float3(turnTo44._41, turnTo44._42, turnTo44._43 + 1.0f), float4(0, 0, 1, 1));
 
 
 		//change a color over time
 #pragma region change line color
-		if (colorChange == true)
+		/*if (colorChange == true)
 		{
 			color.x -= 0.25f * delta_time;
 			color.y += 0.25f * delta_time;
@@ -311,7 +339,7 @@ namespace end
 		if (color.x < 0)
 		{
 			colorChange = false;
-		}
+		}*/
 #pragma endregion
 
 	}

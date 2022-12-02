@@ -11,7 +11,9 @@
 #include "renderer.h"
 #include "dev_app.h"
 
+
 // Global variables
+
 
 // The main window class name.
 static TCHAR szWindowClass[] = _T("DesktopApp");
