@@ -308,6 +308,11 @@ namespace end
 		//store player in a modifiable variable
 		//player44Copy 
 		player = XMMatrixTranslationFromVector(transVec);
+		if (bitTab[2] == 1 || bitTab[3] == 1)
+		{
+
+			player = XMMatrixRotationY(transY);
+		}
 		XMStoreFloat4x4(&player44, player);
 		
 		//move player based on input
