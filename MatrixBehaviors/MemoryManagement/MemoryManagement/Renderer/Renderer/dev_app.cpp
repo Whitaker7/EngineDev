@@ -335,9 +335,9 @@ namespace end
 		//player44._41 -= bitTab[2] * delta_time;	//left with LEFT_KEY
 		//player44._41 += bitTab[3] * delta_time;	//right with RIGHT_KEY
 		//drawPlayer
-		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._11, player44._12, player44._43 + player44._13), float4(1,0,0,1));//x (right)
+		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._41 + player44._11, player44._12, player44._43 + player44._13), float4(1,0,0,1));//x (right)
 		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._41, player44._42 + 1.0f, player44._43), float4(0,1,0,1)); // y (up)
-		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._31, player44._32, player44._43 + player44._33), float4(0,0,1,1));// z (forward)
+		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._41 + player44._31, player44._32, player44._43 + player44._33), float4(0,0,1,1));// z (forward)
 
 		
 		//transVec = XMVectorSet(player44._31, player44._32, player44._43 + player44._33, 1);
