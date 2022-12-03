@@ -90,7 +90,7 @@ namespace end
 	}*/
 	
 
-	void dev_app_t::update()
+	void dev_app_t::update(view_t& viewM)
 	{
 		delta_time = calc_delta_time(); //delta time just equals the amount of time between each frames
 
@@ -312,11 +312,23 @@ namespace end
 		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41, lookAt44._42 + 1.0f, lookAt44._43), float4(0, 1, 0, 1));
 		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41, lookAt44._42, lookAt44._43 + 1.0f), float4(0, 0, 1, 1));
 		//draws turnto
-		turnTo = XMMatrixTranslation(turnTo44._41 + 0.01f, 2.0f, 5.0f);
+		turnTo = XMMatrixTranslation(5.0f, 2.0f, 5.0f);
 		XMStoreFloat4x4(&turnTo44, turnTo);
 		end::debug_renderer::add_line(float3(turnTo44._41, turnTo44._42, turnTo44._43), float3(turnTo44._41 + 1.0f, turnTo44._42, turnTo44._43), float4(1, 0, 0, 1));
 		end::debug_renderer::add_line(float3(turnTo44._41, turnTo44._42, turnTo44._43), float3(turnTo44._41, turnTo44._42 + 1.0f, turnTo44._43), float4(0, 1, 0, 1));
 		end::debug_renderer::add_line(float3(turnTo44._41, turnTo44._42, turnTo44._43), float3(turnTo44._41, turnTo44._42, turnTo44._43 + 1.0f), float4(0, 0, 1, 1));
+
+
+		//Test to make sure it works and it doesss 
+		viewM.view_mat = *(float4x4_a*)(& turnTo44);
+
+
+		//this is a pseudo function to cast between pointers of the same "memory"
+		/*vec3& GetAxisY(float4x4& mIn)
+		{
+			return *(vec3*)& mIn._21;
+		}*/
+
 
 
 		//change a color over time

@@ -7,13 +7,14 @@
 #include <tchar.h>
 #include <iostream>
 #include <conio.h>
+#include <bitset>
 
 #include "renderer.h"
 #include "dev_app.h"
 
 
 // Global variables
-
+std::bitset<4> bitTab; // for right now the bits are up,down,left,right
 
 // The main window class name.
 static TCHAR szWindowClass[] = _T("DesktopApp");
@@ -132,7 +133,30 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
+	case WM_KEYDOWN:
+		if (GetAsyncKeyState(VK_UP))
+		{
+			bitTab[0] = 1;
+		}
+		if (GetAsyncKeyState(VK_DOWN))
+		{
+			bitTab[1] = 1;
+		}
+		if (GetAsyncKeyState(VK_LEFT))
+		{
+			bitTab[2] = 1;
+		}
+		if (GetAsyncKeyState(VK_RIGHT))
+		{
+			bitTab[3] = 1;
+		}
+		break;
+	case WM_IME_KEYUP:
 	default:
+		if (bitTab[0] == 1)
+		{
+			std::cout << "up";
+		}
 		return DefWindowProc(hWnd, message, wParam, lParam);
 		break;
 	}
@@ -175,6 +199,7 @@ MSG begin_main_loop()
 	// Main application loop:
 	while (true)
 	{
+		end::view_t view;
 		// Process all messages, stop on WM_QUIT
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
@@ -187,7 +212,7 @@ MSG begin_main_loop()
 		}
 		else
 		{
-			dev_app.update();
+			dev_app.update(renderer.default_view);
 			renderer.draw();
 		}
 	}
