@@ -133,6 +133,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
+	case WM_KEYUP:
+		if (GetAsyncKeyState(VK_UP) == 0)
+		{
+			bitTab[0] = 0;
+		}
+		if (GetAsyncKeyState(VK_DOWN) == 0)
+		{
+			bitTab[1] = 0;
+		}
+		if (GetAsyncKeyState(VK_LEFT) == 0)
+		{
+			bitTab[2] = 0;
+		}
+		if (GetAsyncKeyState(VK_RIGHT) == 0)
+		{
+			bitTab[3] = 0;
+		}
+		break;
 	case WM_KEYDOWN:
 		if (GetAsyncKeyState(VK_UP))
 		{
@@ -151,7 +169,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			bitTab[3] = 1;
 		}
 		break;
-	case WM_IME_KEYUP:
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 		break;
