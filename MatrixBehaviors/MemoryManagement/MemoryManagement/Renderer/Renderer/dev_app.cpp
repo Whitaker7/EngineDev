@@ -343,8 +343,16 @@ namespace end
 		//transVec = XMVectorSet(player44._31, player44._32, player44._43 + player44._33, 1);
 		playerFor = XMVector3Transform(forVec, playerRot);
 		XMStoreFloat3(&transVec3, playerFor);
-		transVec = XMVectorSetX(transVec, player44._41 + (transVec3.x * delta_time));
-		transVec = XMVectorSetZ(transVec, player44._43 + (transVec3.z * delta_time));
+		if (bitTab[0] == 1)
+		{
+			transVec = XMVectorSetX(transVec, player44._41 + (transVec3.x * delta_time));
+			transVec = XMVectorSetZ(transVec, player44._43 + (transVec3.z * delta_time));
+		}
+		if (bitTab[1] == 1)
+		{
+			transVec = XMVectorSetX(transVec, player44._41 - (transVec3.x * delta_time));
+			transVec = XMVectorSetZ(transVec, player44._43 - (transVec3.z * delta_time));
+		}
 		//transY += 1.0 * delta_time;
 		//draws lookat
 		lookAt = XMMatrixTranslation(-5.0f, 2.0f, -5.0f);
