@@ -153,10 +153,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_IME_KEYUP:
 	default:
-		if (bitTab[0] == 1)
-		{
-			std::cout << "up";
-		}
 		return DefWindowProc(hWnd, message, wParam, lParam);
 		break;
 	}
@@ -212,7 +208,7 @@ MSG begin_main_loop()
 		}
 		else
 		{
-			dev_app.update(renderer.default_view);
+			dev_app.update(renderer.default_view, bitTab);
 			renderer.draw();
 		}
 	}

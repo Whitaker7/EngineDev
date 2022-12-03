@@ -90,7 +90,7 @@ namespace end
 	}*/
 	
 
-	void dev_app_t::update(view_t& viewM)
+	void dev_app_t::update(view_t& viewM, std::bitset<4> bitTab)
 	{
 		delta_time = calc_delta_time(); //delta time just equals the amount of time between each frames
 

@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <chrono>
+#include <bitset>
 #include "renderer.h"
 	
 
@@ -10,7 +11,7 @@ namespace end
 	// Simple app class for development and testing purposes
 	struct dev_app_t
 	{
-		void update(view_t & viewM);
+		void update(view_t & viewM, std::bitset<4> bitTab);
 
 		dev_app_t();
 
