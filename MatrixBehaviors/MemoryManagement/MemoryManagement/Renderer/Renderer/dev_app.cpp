@@ -26,10 +26,13 @@ namespace end
 	XMMATRIX player = XMMatrixIdentity();
 	XMFLOAT4X4 player44;
 	XMVECTOR transVec = XMVectorSet(0, 0.05f, 0, 1.0f);
+	XMVECTOR forVec = XMVectorSet(0, 0, 1, 1);
+	XMVECTOR playerFor;
+	XMMATRIX playerRot = XMMatrixIdentity();
 	XMFLOAT3 transVec3;
 	XMVECTOR scalOrigin;
 	XMVECTOR rotatOrigin;
-	XMVECTOR rotateQuat = CreateFromYawPitchRoll(XM_PI / 2.f, 0.f, -XM_PI / 2.f);;
+	XMVECTOR rotateQuat;
 	float transY = 0;
 	//player44 = *(float4x4*)(& player);
 	XMFLOAT4X4 player44Copy;
@@ -314,36 +317,34 @@ namespace end
 		if (bitTab[2] == 1)
 		{
 			transY -= bitTab[2] * delta_time;
-			//player = XMMatrixRotationY(transY);
+			playerRot = XMMatrixRotationY(transY);
 		}
 		if (bitTab[3] == 1)
 		{
 			transY += bitTab[3] * delta_time;
-			//player = XMMatrixRotationY(transY);
+			playerRot = XMMatrixRotationY(transY);
 		}
-		//XMVectorSetY(rotatOrigin, 1.0f);
-		player = XMMatrixTransformation(
-			scalOrigin, scalOrigin, scalOrigin,
-			rotatOrigin, rotateQuat,
-			transVec
-		);
-		//player = XMMatrixTranslationFromVector(transVec);
+		player = XMMatrixTranslationFromVector(transVec);
+		player = XMMatrixMultiply(playerRot, player);
 		XMStoreFloat4x4(&player44, player);
-		//XMStoreFloat3(&transVec3, transVec);
 		
 		//move player based on input
 		//bitTab is [4] is up,down,left,right
-		player44._43 += bitTab[0] * delta_time; //move forward with UP_KEY
-		player44._43 -= bitTab[1] * delta_time; //back with DOWN_KEY
-		player44._41 -= bitTab[2] * delta_time;	//left with LEFT_KEY
-		player44._41 += bitTab[3] * delta_time;	//right with RIGHT_KEY
+		//player44._43 += bitTab[0] * delta_time; //move forward with UP_KEY
+		//player44._43 -= bitTab[1] * delta_time; //back with DOWN_KEY
+		//player44._41 -= bitTab[2] * delta_time;	//left with LEFT_KEY
+		//player44._41 += bitTab[3] * delta_time;	//right with RIGHT_KEY
 		//drawPlayer
-		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._41 + 1.0f, player44._42, player44._43), float4(1,0,0,1));//x (right)
+		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._11, player44._12, player44._43 + player44._13), float4(1,0,0,1));//x (right)
 		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._41, player44._42 + 1.0f, player44._43), float4(0,1,0,1)); // y (up)
 		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._31, player44._32, player44._43 + player44._33), float4(0,0,1,1));// z (forward)
 
-		transVec = XMVectorSetZ(transVec, player44._43);
-
+		
+		//transVec = XMVectorSet(player44._31, player44._32, player44._43 + player44._33, 1);
+		playerFor = XMVector3Transform(forVec, playerRot);
+		XMStoreFloat3(&transVec3, playerFor);
+		transVec = XMVectorSetX(transVec, player44._41 + (transVec3.x * delta_time));
+		transVec = XMVectorSetZ(transVec, player44._43 + (transVec3.z * delta_time));
 		//transY += 1.0 * delta_time;
 		//draws lookat
 		lookAt = XMMatrixTranslation(-5.0f, 2.0f, -5.0f);
