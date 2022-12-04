@@ -14,7 +14,11 @@
 
 
 // Global variables
-std::bitset<4> bitTab; // for right now the bits are up,down,left,right
+std::bitset<5> bitTab; // for right now the bits are up,down,left,right,mousemoved
+POINT point = { 0,0 };
+LPPOINT lpPoint = &point;// holds x and y mouse pos [0] = x [y] = y
+int outputPoint[2];
+
 
 // The main window class name.
 static TCHAR szWindowClass[] = _T("DesktopApp");
@@ -169,6 +173,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			bitTab[3] = 1;
 		}
 		break;
+	case WM_MOUSEMOVE:
+		GetCursorPos(lpPoint);
+		outputPoint[0] = lpPoint->x;
+		outputPoint[1] = lpPoint->y;
+		break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 		break;
@@ -225,7 +234,7 @@ MSG begin_main_loop()
 		}
 		else
 		{
-			dev_app.update(renderer.default_view, bitTab);
+			dev_app.update(renderer.default_view, bitTab, outputPoint);
 			renderer.draw();
 		}
 	}

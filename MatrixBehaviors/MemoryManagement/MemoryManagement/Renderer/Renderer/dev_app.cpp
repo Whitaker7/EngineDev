@@ -20,8 +20,13 @@ namespace end
 	float creationTimerHolder = 0.05f;//set to 0.05 for best emission
 	float creationTimer = creationTimerHolder;
 
-
-
+	//mouse movement variables
+	int xPos = 0;
+	int yPos = 0;
+	XMMATRIX xMouseMat = XMMatrixIdentity();
+	XMMATRIX yMouseMat = XMMatrixIdentity();
+	XMFLOAT4X4 xMouse44;
+	XMFLOAT4X4 yMouse44;
 
 	XMMATRIX player = XMMatrixIdentity();
 	XMFLOAT4X4 player44;
@@ -101,10 +106,9 @@ namespace end
 	}*/
 	
 
-	void dev_app_t::update(view_t& viewM, std::bitset<4> bitTab)
+	void dev_app_t::update(view_t& viewM, std::bitset<5> bitTab,int inputPoint[2])
 	{
 		delta_time = calc_delta_time(); //delta time just equals the amount of time between each frames
-
 
 
 		//i could make a "timer" but float timer += delta time each frame
@@ -328,20 +332,14 @@ namespace end
 		player = XMMatrixMultiply(playerRot, player);
 		XMStoreFloat4x4(&player44, player);
 		
-		//move player based on input
-		//bitTab is [4] is up,down,left,right
-		//player44._43 += bitTab[0] * delta_time; //move forward with UP_KEY
-		//player44._43 -= bitTab[1] * delta_time; //back with DOWN_KEY
-		//player44._41 -= bitTab[2] * delta_time;	//left with LEFT_KEY
-		//player44._41 += bitTab[3] * delta_time;	//right with RIGHT_KEY
 		//drawPlayer
 		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._41 + player44._11, player44._12, player44._43 + player44._13), float4(1,0,0,1));//x (right)
 		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._41, player44._42 + 1.0f, player44._43), float4(0,1,0,1)); // y (up)
 		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._41 + player44._31, player44._32, player44._43 + player44._33), float4(0,0,1,1));// z (forward)
 
 		
-		//transVec = XMVectorSet(player44._31, player44._32, player44._43 + player44._33, 1);
-		playerFor = XMVector3Transform(forVec, playerRot);
+		//move player based on input
+		playerFor = XMVector3Transform(forVec, playerRot); //gets a vector for the "forward" direction 
 		XMStoreFloat3(&transVec3, playerFor);
 		if (bitTab[0] == 1)
 		{
@@ -369,6 +367,45 @@ namespace end
 
 
 		//Test to make sure it works and it doesss 
+		if (inputPoint[0] != xPos)
+		{
+			//get the difference between current and previous pos
+			// - if moved to the left positive to the right
+			xPos -= inputPoint[0];
+			//get a matrix copy of the view
+			xMouseMat = *(XMMATRIX*)(&viewM.view_mat);
+			//modifiable copy of the view 
+			XMMATRIX viewHolder = xMouseMat;
+			//rotate by time (only yaw)
+			xMouseMat = XMMatrixRotationRollPitchYaw(0, xPos * delta_time, 0);
+			//combine the previous and the new rotates view matrix
+			xMouseMat = XMMatrixMultiply(viewHolder, xMouseMat);
+			//set the view reference to new rotated view
+			viewM.view_mat = *(float4x4_a*)(&xMouse44);
+
+			//reset the xpos to current pos
+			xPos = inputPoint[0];
+		}
+		if (inputPoint[1] != yPos)
+		{
+			//get the difference between current and previous pos
+			// - if moved to the up positive down
+			yPos -= inputPoint[1];
+			yPos = -yPos;
+			//get a matrix copy of the view
+			yMouseMat = *(XMMATRIX*)(&viewM.view_mat);
+			//modifiable copy of the view 
+			XMMATRIX viewHolder = yMouseMat;
+			//rotate by time (only pitch)
+			yMouseMat = XMMatrixRotationRollPitchYaw(yPos * delta_time, 0, 0);
+			//combine the previous and the new rotates view matrix
+			yMouseMat = XMMatrixMultiply(viewHolder, yMouseMat);
+			//set the view reference to new rotated view
+			viewM.view_mat = *(float4x4_a*)(&yMouse44);
+
+			//reset the xpos to current pos
+			yPos = inputPoint[1];
+		}
 		//viewM.view_mat = *(float4x4_a*)(& turnTo44);
 
 
