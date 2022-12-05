@@ -4,7 +4,6 @@
 #include <iostream>
 #include "pools.h"
 #include <DirectXMath.h>
-#include "Gateware.h"
 using namespace DirectX;
 //TODO include debug_renderer.h and pools.h and anything else you might need here
 
@@ -23,7 +22,6 @@ namespace end
 	float playerSpeed = 3;
 
 
-	GW::INPUT::GInput gInput;
 
 	//mouse movement variables
 	int xPos = 0;
@@ -116,7 +114,7 @@ namespace end
 	
 	XMMATRIX LookAt(XMVECTOR pos, XMVECTOR target, XMVECTOR localUp)
 	{
-		XMVECTOR zaxis = XMVector3Normalize(pos - target);
+		XMVECTOR zaxis = XMVector3Normalize(target - pos);
 		XMVECTOR xaxis = XMVector3Normalize(XMVector3Cross(zaxis, localUp));
 		XMVECTOR yaxis = XMVector3Cross(xaxis, zaxis);
 
@@ -190,109 +188,6 @@ namespace end
 		return *(XMMATRIX*)(&view44);
 	}
 
-	void UpdateCamera()
-	{
-		GW::MATH::GMATRIXF CameraInverse;
-		GW::MATH::GMATRIXF TranslationMatrix;
-		proxy_matrix.IdentityF(TranslationMatrix);
-		GW::MATH::GMATRIXF PitchMatrix;
-		proxy_matrix.IdentityF(PitchMatrix);
-		GW::MATH::GMATRIXF YawMatrix;
-		proxy_matrix.IdentityF(YawMatrix);
-		GW::MATH::GVECTORF translationVector = { 0,0,0,0 };
-		GW::MATH::GVECTORF saveCamPos = { 0,0,0,0 };
-		const float Camera_Speed = 0.2f;
-		float Total_Y_Change = 0;
-		float PerFrameSpeed = 0;
-		float Total_Z_Change = 0;
-		float Total_X_Change = 0;
-		float Thumb_Speed = 0;
-		float Total_Pitch = 0;
-		float Total_Yaw = 0;
-
-		//std::chrono::high_resolution_clock::time_point currTime = std::chrono::high_resolution_clock::now();
-		//std::chrono::duration<float> Seconds_Passed_Since_Last_Frame = std::chrono::duration_cast<std::chrono::duration<float>>(currTime - previousTime);
-		// TODO: Part 4c
-		CameraInverse = viewMatrix;
-		proxy_matrix.InverseF(CameraInverse, CameraInverse);
-		// TODO: Part 4d
-		float SPACE_KEY_STATE = 0;
-		float LEFT_SHIFT_STATE = 0;
-		float RIGHT_TRIGGER_STATE = 0;
-		float LEFT_TRIGGER_STATE = 0;
-		float W_KEY_STATE = 0;
-		float S_KEY_STATE = 0;
-		float LEFT_STICK_Y_AXIS_STATE = 0;
-		float D_KEY_STATE = 0;
-		float A_KEY_STATE = 0;
-		float LEFT_STICK_X_AXIS_STATE = 0;
-		float MOUSE_X_DELTA = 0;
-		float MOUSE_X_DELTA_HOLDER = 0;
-		float MOUSE_Y_DELTA = 0;
-		float MOUSE_Y_DELTA_HOLDER = 0;
-		float RIGHT_STICK_Y_AXIS_STATE = 0;
-		float RIGHT_STICK_X_AXIS_STATE = 0;
-
-		gInput.GetState(G_KEY_SPACE, SPACE_KEY_STATE);
-		gInput.GetState(G_KEY_LEFTSHIFT, LEFT_SHIFT_STATE);
-		gController.GetState(0, G_LEFT_TRIGGER_AXIS, LEFT_TRIGGER_STATE);
-		gController.GetState(0, G_RIGHT_TRIGGER_AXIS, RIGHT_TRIGGER_STATE);
-		gInput.GetState(G_KEY_W, W_KEY_STATE);
-		gInput.GetState(G_KEY_S, S_KEY_STATE);
-		gInput.GetState(G_KEY_D, D_KEY_STATE);
-		gInput.GetState(G_KEY_A, A_KEY_STATE);
-		gController.GetState(0, G_LY_AXIS, LEFT_STICK_Y_AXIS_STATE);
-		gController.GetState(0, G_LX_AXIS, LEFT_STICK_X_AXIS_STATE);
-		gController.GetState(0, G_RY_AXIS, RIGHT_STICK_Y_AXIS_STATE);
-		gController.GetState(0, G_RX_AXIS, RIGHT_STICK_X_AXIS_STATE);
-		gInput.GetMouseDelta(MOUSE_X_DELTA, MOUSE_Y_DELTA);
-
-
-
-
-
-		Total_Y_Change = SPACE_KEY_STATE - LEFT_SHIFT_STATE + RIGHT_TRIGGER_STATE - LEFT_TRIGGER_STATE;
-		CameraInverse.row4.y += Total_Y_Change * Camera_Speed * Seconds_Passed_Since_Last_Frame.count();
-
-		// TODO: Part 4e
-		PerFrameSpeed = Camera_Speed * Seconds_Passed_Since_Last_Frame.count();
-		Total_Z_Change = W_KEY_STATE - S_KEY_STATE + LEFT_STICK_Y_AXIS_STATE;
-		Total_X_Change = D_KEY_STATE - A_KEY_STATE + LEFT_STICK_X_AXIS_STATE;
-		translationVector.x = Total_X_Change * PerFrameSpeed;
-		translationVector.z = Total_Z_Change * PerFrameSpeed;
-		proxy_matrix.TranslateLocalF(TranslationMatrix, translationVector, TranslationMatrix);
-		proxy_matrix.MultiplyMatrixF(TranslationMatrix, CameraInverse, CameraInverse);
-
-
-		if ((MOUSE_X_DELTA != MOUSE_X_DELTA_HOLDER || MOUSE_Y_DELTA != MOUSE_Y_DELTA_HOLDER) || (RIGHT_STICK_Y_AXIS_STATE != MOUSE_Y_DELTA_HOLDER
-			|| RIGHT_STICK_X_AXIS_STATE != MOUSE_X_DELTA_HOLDER))
-		{
-			// TODO: Part 4f
-			Thumb_Speed = 3.14 * Seconds_Passed_Since_Last_Frame.count();
-			Total_Pitch = 1.0f * MOUSE_Y_DELTA / 600.0f + RIGHT_STICK_Y_AXIS_STATE * -Thumb_Speed;
-			proxy_matrix.RotateXLocalF(PitchMatrix, Total_Pitch, PitchMatrix);
-			proxy_matrix.MultiplyMatrixF(PitchMatrix, CameraInverse, CameraInverse);
-
-			// TODO: Part 4g
-			//float aspectRatio;
-			//d3d.GetAspectRatio(aspectRatio);
-
-			Total_Yaw = 1.0f * aspectRatio * MOUSE_X_DELTA / 800 + RIGHT_STICK_X_AXIS_STATE * Thumb_Speed;
-			proxy_matrix.RotateYGlobalF(YawMatrix, Total_Yaw, YawMatrix);
-			saveCamPos.x = CameraInverse.row4.x;
-			saveCamPos.y = CameraInverse.row4.y;
-			saveCamPos.z = CameraInverse.row4.z;
-			proxy_matrix.MultiplyMatrixF(CameraInverse, YawMatrix, CameraInverse);
-			CameraInverse.row4.x = saveCamPos.x;
-			CameraInverse.row4.y = saveCamPos.y;
-			CameraInverse.row4.z = saveCamPos.z;
-		}
-
-		// TODO: Part 4c
-		proxy_matrix.InverseF(CameraInverse, viewMatrix);
-		//viewMatrix = CameraInverse;
-		previousTime = std::chrono::high_resolution_clock::now();//currTime;
-	}
 
 	void dev_app_t::update(view_t& viewM, std::bitset<9> bitTab,int inputPoint[2])
 	{
@@ -538,13 +433,11 @@ namespace end
 		XMStoreFloat3(&transVec3, playerFor);
 		if (bitTab[0] == 1)
 		{
-			transVec = XMVectorSetX(transVec, player44._41 + (transVec3.x * delta_time * playerSpeed));
-			transVec = XMVectorSetZ(transVec, player44._43 + (transVec3.z * delta_time * playerSpeed));
+			transVec += playerFor * delta_time * playerSpeed;
 		}
 		if (bitTab[1] == 1)
 		{
-			transVec = XMVectorSetX(transVec, player44._41 - (transVec3.x * delta_time * playerSpeed));
-			transVec = XMVectorSetZ(transVec, player44._43 - (transVec3.z * delta_time * playerSpeed));
+			transVec -= playerFor * delta_time * playerSpeed;
 		}
 		//transY += 1.0 * delta_time;
 		//draws lookat
@@ -554,9 +447,9 @@ namespace end
 	
 		lookAt = LookAt(lookAtPos, playerPos, upVec);
 		XMStoreFloat4x4(&lookAt44, lookAt);
-		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41 + lookAt44._11, lookAt44._42 + lookAt44._21, lookAt44._43 + lookAt44._31), float4(1, 0, 0, 1));
+		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41 - lookAt44._11, lookAt44._42 - lookAt44._21, lookAt44._43 - lookAt44._31), float4(1, 0, 0, 1));
 		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41 + lookAt44._12, lookAt44._42 + lookAt44._22, lookAt44._43 + lookAt44._32), float4(0, 1, 0, 1));
-		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41 - lookAt44._13, lookAt44._42 - lookAt44._23, lookAt44._43 - lookAt44._33), float4(0, 0, 1, 1));
+		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41 + lookAt44._13, lookAt44._42 + lookAt44._23, lookAt44._43 + lookAt44._33), float4(0, 0, 1, 1));
 
 		//draws turnto
 		turnTo = XMMatrixTranslation(5.0f, 2.0f, 5.0f);

@@ -56,9 +56,6 @@
     <ClInclude Include="debug_renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Gateware.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shaders\ps_cube.hlsl">
