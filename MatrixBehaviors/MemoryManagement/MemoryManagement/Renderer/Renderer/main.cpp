@@ -14,7 +14,7 @@
 
 
 // Global variables
-std::bitset<9> bitTab; // for right now the bits are up,down,left,right, W, S, A, D, shift
+std::bitset<256> bitTab; // for right now the bits are up,down,left,right, W, S, A, D, shift
 POINT point = { 0,0 };
 LPPOINT lpPoint = &point;// holds x and y mouse pos [0] = x [y] = y
 int outputPoint[2];
@@ -138,80 +138,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		PostQuitMessage(0);
 		break;
 	case WM_KEYUP:
-		if (GetAsyncKeyState(VK_UP) == 0)
-		{
-			bitTab[0] = 0;
-		}
-		if (GetAsyncKeyState(VK_DOWN) == 0)
-		{
-			bitTab[1] = 0;
-		}
-		if (GetAsyncKeyState(VK_LEFT) == 0)
-		{
-			bitTab[2] = 0;
-		}
-		if (GetAsyncKeyState(VK_RIGHT) == 0)
-		{
-			bitTab[3] = 0;
-		}
-		if (GetAsyncKeyState('W'))
-		{
-			bitTab[4] = 0;
-		}
-		if (GetAsyncKeyState('S'))
-		{
-			bitTab[5] = 0;
-		}
-		if (GetAsyncKeyState('A'))
-		{
-			bitTab[6] = 0;
-		}
-		if (GetAsyncKeyState('D'))
-		{
-			bitTab[7] = 0;
-		}
-		if (GetAsyncKeyState(VK_LSHIFT))
-		{
-			bitTab[8] = 0;
-		}
+		bitTab[(int)wParam] = false;
 		break;
 	case WM_KEYDOWN:
-		if (GetAsyncKeyState(VK_UP))
-		{
-			bitTab[0] = 1;
-		}
-		if (GetAsyncKeyState(VK_DOWN))
-		{
-			bitTab[1] = 1;
-		}
-		if (GetAsyncKeyState(VK_LEFT))
-		{
-			bitTab[2] = 1;
-		}
-		if (GetAsyncKeyState(VK_RIGHT))
-		{
-			bitTab[3] = 1;
-		}
-		if (GetAsyncKeyState('W'))
-		{
-			bitTab[4] = 1;
-		}
-		if (GetAsyncKeyState('S'))
-		{
-			bitTab[5] = 1;
-		}
-		if (GetAsyncKeyState('A'))
-		{
-			bitTab[6] = 1;
-		}
-		if (GetAsyncKeyState('D'))
-		{
-			bitTab[7] = 1;
-		}
-		if (GetAsyncKeyState(VK_LSHIFT))
-		{
-			bitTab[8] = 1;
-		}
+		bitTab[(int)wParam] = true;
 		break;
 	case WM_MOUSEMOVE:
 		GetCursorPos(lpPoint);

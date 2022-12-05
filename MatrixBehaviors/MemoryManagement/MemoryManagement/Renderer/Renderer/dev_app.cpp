@@ -4,6 +4,7 @@
 #include <iostream>
 #include "pools.h"
 #include <DirectXMath.h>
+//#include <WinUser.h>
 using namespace DirectX;
 //TODO include debug_renderer.h and pools.h and anything else you might need here
 
@@ -32,12 +33,16 @@ namespace end
 	XMFLOAT4X4 yMouse44;
 	XMVECTOR cameraTrans = XMVectorSet(0, 0, 0, 1);
 	XMVECTOR camFor;
+	XMVECTOR camPos = XMVectorSet(0.0f, 15.0f, -15.0f, 1.0f);
+	XMFLOAT4 camPos4;
+	XMMATRIX totalCamRot;
+	XMMATRIX viewHolder;
 
 	XMMATRIX player = XMMatrixIdentity();
 	XMFLOAT4X4 player44;
 	XMVECTOR playerPos = {0, 0, 0, 0};
 	XMVECTOR transVec = XMVectorSet(0, 0.05f, 0, 1.0f);
-	XMVECTOR forVec = XMVectorSet(0, 0, 1, 1);
+	XMVECTOR forVec = XMVectorSet(0, 0, 1, 0);
 	XMVECTOR upVec = XMVectorSet(0, 1, 0, 0);
 	XMVECTOR playerFor;
 	XMMATRIX playerRot = XMMatrixIdentity();
@@ -50,7 +55,7 @@ namespace end
 	XMFLOAT4X4 player44Copy;
 	XMMATRIX lookAt = XMMatrixIdentity();
 	XMFLOAT4X4 lookAt44;
-	XMMATRIX turnTo = XMMatrixIdentity();
+	XMMATRIX turnTo = XMMatrixTranslation(5.0f, 2.0f, 5.0f);;
 	XMFLOAT4X4 turnTo44;
 
 	struct Particle
@@ -143,58 +148,45 @@ namespace end
 
 	XMMATRIX TurnTo(XMMATRIX viewer, XMVECTOR target, float speed)
 	{
-		XMFLOAT4X4 posMat;
-		XMStoreFloat4x4(&posMat, viewer);
-		XMVECTOR pos = XMVectorSet(posMat._41, posMat._42, posMat._43, 1);
-		XMVECTOR newTarget = XMVectorLerp(target, pos, 0.01f);
-		XMVECTOR test = XMVectorSet(0, 0, 0, 0);
-		XMVECTOR zaxis = XMVector3Normalize(pos - target);
-		XMVECTOR xaxis = XMVector3Normalize(XMVector3Cross(zaxis, upVec));
-		XMVECTOR yaxis = XMVector3Cross(xaxis, zaxis);
+		XMFLOAT4X4 viewer44;
+		XMStoreFloat4x4(&viewer44, viewer);
+		XMVECTOR eye = XMVectorSet(viewer44._41, viewer44._42, viewer44._43, 0);
+		viewer44._41 = 0;
+		viewer44._42 = 0;
+		viewer44._43 = 0;
+		XMVECTOR xDefault = XMVectorSet(1, 0, 0, 0);
+		XMVECTOR eyeXaxis = XMVector4Transform(xDefault, *(XMMATRIX*)(&viewer44));
+		XMVECTOR eyeZaxis = XMVector4Transform(forVec, *(XMMATRIX*)(&viewer44));
+		XMVECTOR eyeYaxis = XMVector4Transform(upVec, *(XMMATRIX*)(&viewer44));
 
-		XMVECTOR quaternion = {0,0,0,0};
-		XMVECTOR scale = {0,0,0,0};
-		XMVECTOR translation = {0,0,0,0};
+		// Turn-To (Y-Axis) pseudocode
+		//Get the vector that points from looker position to target positionand normalize it(vToTarget)
+		XMVECTOR vToTarget;
+		vToTarget = XMVector4Normalize(target - eye);
+		//Dot vToTarget against the X - Axis of the looker matrix(fAngleDot)
+		XMVECTOR vAngleDot = XMVector4Dot(vToTarget, eyeXaxis);
+		float fAngleDotX;
+		XMStoreFloat(&fAngleDotX, vAngleDot);
+		vAngleDot = XMVector4Dot(vToTarget, eyeYaxis);
+		float fAngleDotY;
+		XMStoreFloat(&fAngleDotY, vAngleDot);
+		// Rotate the looker matrix about the Y - axis by(fAngleDot * fDeltaTime)
+		XMMATRIX xRotation = XMMatrixRotationX(-fAngleDotY * speed);
+		XMMATRIX yRotation = XMMatrixRotationY(fAngleDotX * speed);
+		XMMATRIX totalRotation = XMMatrixMultiply(xRotation, yRotation);
+		viewer = XMMatrixMultiply(totalRotation, viewer);
 
-		XMFLOAT3 zaxis3;
-		XMFLOAT3 xaxis3;
-		XMFLOAT3 yaxis3;
-		XMFLOAT3 eye;
-
-		XMStoreFloat3(&eye, pos);
-		XMStoreFloat3(&zaxis3, zaxis);
-		XMStoreFloat3(&xaxis3, xaxis);
-		XMStoreFloat3(&yaxis3, yaxis);
-
-		//zaxis = XMVectorNegate(zaxis); // might only need to do this for right hand orientation
-
-		XMFLOAT4X4 view44 = {
-			xaxis3.x, yaxis3.x, zaxis3.x, 0.0f,
-			xaxis3.y, yaxis3.y, zaxis3.y, 0.0f,
-			xaxis3.z, yaxis3.z, zaxis3.z, 0.0f,
-			//-XMVector3Dot(xaxis, pos), -XMVector3Dot(yaxis, pos), -XMVector3Dot(zaxis, pos), 1.0f
-			eye.x, eye.y, eye.z, 1.0f
-		};
-
-		FXMMATRIX viewMatrix = XMLoadFloat4x4(&view44);
-		XMMatrixDecompose(&scale, &quaternion, &translation, viewMatrix);
-		XMMATRIX finalMatrix;
-		//quaternion *= 0.5f;
-		XMFLOAT4 testQuat = { 0,0,0,0 };
-		XMStoreFloat4(&testQuat, quaternion);
-		finalMatrix = XMMatrixRotationQuaternion(quaternion);
-		finalMatrix = XMMatrixMultiply(finalMatrix, viewMatrix);
-
-		return *(XMMATRIX*)(&view44);
+		return viewer;
+		
 	}
 
 
-	void dev_app_t::update(view_t& viewM, std::bitset<9> bitTab,int inputPoint[2])
+	void dev_app_t::update(view_t& viewM, std::bitset<256> bitTab,int inputPoint[2])
 	{
 		delta_time = calc_delta_time(); //delta time just equals the amount of time between each frames
 
 		//sprint
-		if (bitTab[8] == 1)
+		if (bitTab[0x10] == 1)
 		{
 			playerSpeed = 6;
 		}
@@ -408,14 +400,14 @@ namespace end
 
 		//store player in a modifiable variable
 		//player44Copy 
-		if (bitTab[2] == 1)
+		if (bitTab[0x25] == 1)
 		{
-			transY -= bitTab[2] * delta_time * 3;
+			transY -= bitTab[0x25] * delta_time * 3;
 			playerRot = XMMatrixRotationY(transY);
 		}
-		if (bitTab[3] == 1)
+		if (bitTab[0x27] == 1)
 		{
-			transY += bitTab[3] * delta_time * 3;
+			transY += bitTab[0x27] * delta_time * 3;
 			playerRot = XMMatrixRotationY(transY);
 		}
 		player = XMMatrixTranslationFromVector(transVec);
@@ -431,11 +423,11 @@ namespace end
 		//move player based on input
 		playerFor = XMVector3Transform(forVec, playerRot); //gets a vector for the "forward" direction 
 		XMStoreFloat3(&transVec3, playerFor);
-		if (bitTab[0] == 1)
+		if (bitTab[0x26] == 1)
 		{
 			transVec += playerFor * delta_time * playerSpeed;
 		}
-		if (bitTab[1] == 1)
+		if (bitTab[0x28] == 1)
 		{
 			transVec -= playerFor * delta_time * playerSpeed;
 		}
@@ -447,26 +439,26 @@ namespace end
 	
 		lookAt = LookAt(lookAtPos, playerPos, upVec);
 		XMStoreFloat4x4(&lookAt44, lookAt);
-		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41 - lookAt44._11, lookAt44._42 - lookAt44._21, lookAt44._43 - lookAt44._31), float4(1, 0, 0, 1));
+		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41 + lookAt44._11, lookAt44._42 + lookAt44._21, lookAt44._43 + lookAt44._31), float4(1, 0, 0, 1));
 		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41 + lookAt44._12, lookAt44._42 + lookAt44._22, lookAt44._43 + lookAt44._32), float4(0, 1, 0, 1));
 		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41 + lookAt44._13, lookAt44._42 + lookAt44._23, lookAt44._43 + lookAt44._33), float4(0, 0, 1, 1));
 
 		//draws turnto
-		turnTo = XMMatrixTranslation(5.0f, 2.0f, 5.0f);
+		//turnTo = XMMatrixTranslation(5.0f, 2.0f, 5.0f);
 		XMVECTOR turnToPos = XMVectorSet(5.0f, 2.0f, 5.0f, 1.0f);
-		turnTo = TurnTo(turnTo, playerPos, 0.5f);
+		turnTo = TurnTo(turnTo, playerPos, delta_time);
 		XMStoreFloat4x4(&turnTo44, turnTo);
-		end::debug_renderer::add_line(float3(turnTo44._41, turnTo44._42, turnTo44._43), float3(turnTo44._41 + turnTo44._11, turnTo44._42 + turnTo44._21, turnTo44._43 + turnTo44._31), float4(1, 0, 0, 1));
-		end::debug_renderer::add_line(float3(turnTo44._41, turnTo44._42, turnTo44._43), float3(turnTo44._41 + turnTo44._12, turnTo44._42 + turnTo44._22, turnTo44._43 + turnTo44._32), float4(0, 1, 0, 1));
-		end::debug_renderer::add_line(float3(turnTo44._41, turnTo44._42, turnTo44._43), float3(turnTo44._41 - turnTo44._13, turnTo44._42 - turnTo44._23, turnTo44._43 - turnTo44._33), float4(0, 0, 1, 1));
+		end::debug_renderer::add_line(float3(turnTo44._41, turnTo44._42, turnTo44._43), float3(turnTo44._41 + turnTo44._11, turnTo44._42 + turnTo44._12, turnTo44._43 + turnTo44._13), float4(1, 0, 0, 1));
+		end::debug_renderer::add_line(float3(turnTo44._41, turnTo44._42, turnTo44._43), float3(turnTo44._41 + turnTo44._21, turnTo44._42 + turnTo44._22, turnTo44._43 + turnTo44._23), float4(0, 1, 0, 1));
+		end::debug_renderer::add_line(float3(turnTo44._41, turnTo44._42, turnTo44._43), float3(turnTo44._41 + turnTo44._31, turnTo44._42 + turnTo44._32, turnTo44._43 + turnTo44._33), float4(0, 0, 1, 1));
 
 
 
 #pragma region cameraMovement
 		//mouse movement
+		XMStoreFloat4(&camPos4, camPos);
 		if (inputPoint[0] != xPos || inputPoint[1] != yPos)
 		{
-			XMMATRIX viewHolder;
 			xPos -= inputPoint[0];
 			yPos -= inputPoint[1];
 			yPos = -yPos;
@@ -477,44 +469,58 @@ namespace end
 
 			float totalPitch = yPos * delta_time;
 			//yMouseMat = XMMatrixRotationX(totalPitch);
-			xMouseMat = XMMatrixRotationRollPitchYaw(totalPitch, totalYaw, 0);
-			viewHolder = XMMatrixMultiply(*(XMMATRIX*)(&viewM.view_mat), xMouseMat);
+			//xMouseMat = XMMatrixRotationRollPitchYaw(totalPitch, totalYaw, 0);
+			XMMATRIX xRotation = XMMatrixRotationX(totalPitch);
+			XMMATRIX yRotation = XMMatrixRotationY(totalYaw);
+			XMFLOAT4X4 yRot44;
+			XMStoreFloat4x4(&yRot44, yRotation);
+			yRot44._41 = 0;
+			yRot44._42 = 0;
+			yRot44._43 = 0;
+
+			totalCamRot = XMMatrixMultiply(xRotation, yRotation);
+			
+			viewHolder = XMMatrixMultiply(*(XMMATRIX*)(&viewM.view_mat), *(XMMATRIX*)(&yRot44));
+			viewHolder = XMMatrixMultiply(xRotation, viewHolder);
 
 			xPos = inputPoint[0];
 			yPos = inputPoint[1];
 
-			//viewM.view_mat = *(float4x4_a*)(&viewHolder);
+			viewM.view_mat = *(float4x4_a*)(&viewHolder);
 		}
 
 		//wsad movement
 		XMVECTOR forward;
+		XMVECTOR right;
+		right = *(XMVECTOR*)(&viewM.view_mat[0]);
 		XMFLOAT3 cameraTrans3;
 		XMFLOAT4X4 camHold = *(XMFLOAT4X4*)(&viewM.view_mat);
+		camHold._41 = 0;
+		camHold._42 = 0;
+		camHold._43 = 0;
 		XMMATRIX cam;
-		forward = XMVector3Transform({ 0,0,1 }, xMouseMat); //gets a vector for the "forward" direction 
+		//forward = XMVector3Transform({ 0,0,1 }, xMouseMat); //gets a vector for the "forward" direction 
+		forward = *(XMVECTOR*)(&viewM.view_mat[2]);
 		XMStoreFloat3(&cameraTrans3, forward);
-		if (bitTab[4] == 1)
+		if (bitTab['W'] == 1)
 		{
-			cameraTrans = XMVectorSetX(cameraTrans, camHold._41 + (cameraTrans3.x * delta_time));
-			cameraTrans = XMVectorSetY(cameraTrans, camHold._42);
-			cameraTrans = XMVectorSetZ(cameraTrans, camHold._43 + (cameraTrans3.z * delta_time));
-			cam = XMMatrixTranslationFromVector(cameraTrans);
-			cam = XMMatrixMultiply(xMouseMat, cam);
-			//viewM.view_mat = *(float4x4_a*)(&cam);
+			camPos += forward * delta_time * playerSpeed;
+			viewM.view_mat[3].xyz = *(float3*)(&camPos);
 		}
-		if (bitTab[5] == 1)
+		if (bitTab['S'] == 1)
 		{
-			XMFLOAT4X4 viewHolder = *(XMFLOAT4X4*)(&viewM.view_mat);
+			camPos -= forward * delta_time * playerSpeed;
+			viewM.view_mat[3].xyz = *(float3*)(&camPos);
 		}
-		if (bitTab[6] == 1)
+		if (bitTab['D'] == 1)
 		{
-			XMFLOAT4X4 viewHolder = *(XMFLOAT4X4*)(&viewM.view_mat);
-
+			camPos += right * delta_time * playerSpeed;
+			viewM.view_mat[3].xyz = *(float3*)(&camPos);
 		}
-		if (bitTab[7] == 1)
+		if (bitTab['A'] == 1)
 		{
-			XMFLOAT4X4 viewHolder = *(XMFLOAT4X4*)(&viewM.view_mat);
-
+			camPos -= right * delta_time * playerSpeed;
+			viewM.view_mat[3].xyz = *(float3*)(&camPos);
 		}
 #pragma endregion
 

@@ -11,7 +11,7 @@ namespace end
 	// Simple app class for development and testing purposes
 	struct dev_app_t
 	{
-		void update(view_t & viewM, std::bitset<9> bitTab, int inputPoint[2]);
+		void update(view_t & viewM, std::bitset<256> bitTab, int inputPoint[2]);
 
 		dev_app_t();
 
