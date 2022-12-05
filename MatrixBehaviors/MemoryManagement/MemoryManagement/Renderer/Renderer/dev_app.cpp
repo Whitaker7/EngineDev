@@ -33,8 +33,10 @@ namespace end
 
 	XMMATRIX player = XMMatrixIdentity();
 	XMFLOAT4X4 player44;
+	XMVECTOR playerPos = {0, 0, 0, 0};
 	XMVECTOR transVec = XMVectorSet(0, 0.05f, 0, 1.0f);
 	XMVECTOR forVec = XMVectorSet(0, 0, 1, 1);
+	XMVECTOR upVec = XMVectorSet(0, 1, 0, 0);
 	XMVECTOR playerFor;
 	XMMATRIX playerRot = XMMatrixIdentity();
 	XMFLOAT3 transVec3;
@@ -108,6 +110,34 @@ namespace end
 		part.
 	}*/
 	
+	XMMATRIX LookAt(XMVECTOR pos, XMVECTOR target, XMVECTOR localUp)
+	{
+		XMVECTOR zaxis = XMVector3Normalize(pos - target);
+		XMVECTOR xaxis = XMVector3Normalize(XMVector3Cross(zaxis, localUp));
+		XMVECTOR yaxis = XMVector3Cross(xaxis, zaxis);
+
+		XMFLOAT3 zaxis3;
+		XMFLOAT3 xaxis3;
+		XMFLOAT3 yaxis3;
+		XMFLOAT3 eye;
+
+		XMStoreFloat3(&eye, pos);
+		XMStoreFloat3(&zaxis3, zaxis);
+		XMStoreFloat3(&xaxis3, xaxis);
+		XMStoreFloat3(&yaxis3, yaxis);
+
+		//zaxis = XMVectorNegate(zaxis); // might only need to do this for right hand orientation
+
+		XMFLOAT4X4 viewMatrix = {
+			xaxis3.x, yaxis3.x, zaxis3.x, 0.0f,
+			xaxis3.y, yaxis3.y, zaxis3.y, 0.0f,
+			xaxis3.z, yaxis3.z, zaxis3.z, 0.0f,
+			//-XMVector3Dot(xaxis, pos), -XMVector3Dot(yaxis, pos), -XMVector3Dot(zaxis, pos), 1.0f
+			eye.x, eye.y, eye.z, 1.0f
+		};
+
+		return *(XMMATRIX*)(&viewMatrix);
+	}
 
 	void dev_app_t::update(view_t& viewM, std::bitset<9> bitTab,int inputPoint[2])
 	{
@@ -330,12 +360,12 @@ namespace end
 		//player44Copy 
 		if (bitTab[2] == 1)
 		{
-			transY -= bitTab[2] * delta_time;
+			transY -= bitTab[2] * delta_time * 3;
 			playerRot = XMMatrixRotationY(transY);
 		}
 		if (bitTab[3] == 1)
 		{
-			transY += bitTab[3] * delta_time;
+			transY += bitTab[3] * delta_time * 3;
 			playerRot = XMMatrixRotationY(transY);
 		}
 		player = XMMatrixTranslationFromVector(transVec);
@@ -364,17 +394,22 @@ namespace end
 		//transY += 1.0 * delta_time;
 		//draws lookat
 		lookAt = XMMatrixTranslation(-5.0f, 2.0f, -5.0f);
+		XMVECTOR lookAtPos = XMVectorSet(-5.0f, 2.0f, -5.0f, 1);
+		playerPos = XMVectorSet(player44._41, player44._42, player44._43, 0);
+	
+		XMVECTOR lookAtUp = XMVector3TransformCoord(upVec, lookAt);
+		lookAt = LookAt(lookAtPos, playerPos, upVec);
 		XMStoreFloat4x4(&lookAt44, lookAt);
-		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41 + 1.0f, lookAt44._42, lookAt44._43), float4(1, 0, 0, 1));
-		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41, lookAt44._42 + 1.0f, lookAt44._43), float4(0, 1, 0, 1));
-		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41, lookAt44._42, lookAt44._43 + 1.0f), float4(0, 0, 1, 1));
+		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41 + lookAt44._11, lookAt44._42 + lookAt44._21, lookAt44._43 + lookAt44._31), float4(1, 0, 0, 1));
+		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41 + lookAt44._12, lookAt44._42 + lookAt44._22, lookAt44._43 + lookAt44._32), float4(0, 1, 0, 1));
+		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41 - lookAt44._13, lookAt44._42 - lookAt44._23, lookAt44._43 - lookAt44._33), float4(0, 0, 1, 1));
 
 		//draws turnto
-		turnTo = XMMatrixTranslation(5.0f, 2.0f, 5.0f);
+		/*turnTo = XMMatrixTranslation(5.0f, 2.0f, 5.0f);
 		XMStoreFloat4x4(&turnTo44, turnTo);
 		end::debug_renderer::add_line(float3(turnTo44._41, turnTo44._42, turnTo44._43), float3(turnTo44._41 + 1.0f, turnTo44._42, turnTo44._43), float4(1, 0, 0, 1));
 		end::debug_renderer::add_line(float3(turnTo44._41, turnTo44._42, turnTo44._43), float3(turnTo44._41, turnTo44._42 + 1.0f, turnTo44._43), float4(0, 1, 0, 1));
-		end::debug_renderer::add_line(float3(turnTo44._41, turnTo44._42, turnTo44._43), float3(turnTo44._41, turnTo44._42, turnTo44._43 + 1.0f), float4(0, 0, 1, 1));
+		end::debug_renderer::add_line(float3(turnTo44._41, turnTo44._42, turnTo44._43), float3(turnTo44._41, turnTo44._42, turnTo44._43 + 1.0f), float4(0, 0, 1, 1));*/
 
 
 
