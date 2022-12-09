@@ -305,9 +305,9 @@ namespace end
 		float3 origin = playerPosMat[3].xyz;
 
 
-		XMVECTOR forDir = { playerPosMat[3].x, playerPosMat[3].y, playerPosMat[3].z };
+		XMVECTOR forDir = { playerPosMat[2].x, playerPosMat[2].y, playerPosMat[2].z };
 		forDir = XMVector3Normalize(forDir);
-		XMVECTOR rightDir = { playerPosMat[1].x, playerPosMat[1].y, playerPosMat[1].z };
+		XMVECTOR rightDir = { playerPosMat[0].x, playerPosMat[0].y, playerPosMat[0].z };
 		rightDir = XMVector3Normalize(rightDir);
 
 		float3 rightDirection = *(float3*)(&rightDir);
@@ -315,8 +315,11 @@ namespace end
 
 		float4 frustrumColor ( 1.0f, 0.0f, 0.0f, 0.0f );
 
-		end::debug_renderer::add_line(origin + (forwardDirection * 1.0f) + (rightDirection * 0.5f),
-			origin + (forwardDirection * 1.0f) - (rightDirection * 0.5f),
+		end::debug_renderer::add_line(origin + forwardDirection,
+			origin,
+			frustrumColor);
+		end::debug_renderer::add_line(origin + rightDirection,
+			origin,
 			frustrumColor);
 			
 		/*end::debug_renderer::add_line
@@ -485,10 +488,6 @@ namespace end
 
 
 		
-
-
-#pragma endregion
-
 
 
 
