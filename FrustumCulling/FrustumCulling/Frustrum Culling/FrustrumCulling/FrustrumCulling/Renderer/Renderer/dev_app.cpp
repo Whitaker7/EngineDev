@@ -297,6 +297,37 @@ namespace end
 
 	}
 
+	//draws frustrums normals.
+	//takes 3 clockwise points from each plane
+	//makes two vectors. one pointing at the butt of the next
+	//cross those two (order matters i did (top vector pointing right, left vector pointing up))
+	//need to figure out how to draw in center of plane (DONE)
+	void DrawFrustrumNormal()
+	{
+		XMVECTOR topL2right = *(XMVECTOR*)(&frustrumPoints[1]) - *(XMVECTOR*)(&frustrumPoints[0]);
+		XMVECTOR botLUp = *(XMVECTOR*)(&frustrumPoints[0]) - *(XMVECTOR*)(&frustrumPoints[3]);
+
+		//cross product results in the normal
+		XMVECTOR normal = XMVector3Normalize(XMVector3Cross(topL2right, botLUp));
+
+		XMVECTOR rightTrans = topL2right * 0.5f;
+		XMVECTOR downTrans = botLUp * 0.5f;
+
+		float3 center = frustrumPoints[0] + (*(float3*)(&rightTrans));
+		center = center - (*(float3*)(&downTrans));
+
+		float prevMod = 0;
+
+		for (int i = 0; i < 10; i++)
+		{
+			float modifier = 0.1f * i;
+			end::debug_renderer::add_line(center + (*(float3*)(&normal) * prevMod), center + (*(float3*)(&normal)*modifier), float4(1.0f, modifier, 1.0f, 1.0f));
+			prevMod = modifier;
+
+		}
+
+	}
+
 	void DrawFrustrum(float4x4 playerPosMat)
 	{
 		//origin of player matrix
@@ -339,6 +370,7 @@ namespace end
 		end::debug_renderer::add_line(frustrumPoints[5], frustrumPoints[6], frustrumColor);//right
 		end::debug_renderer::add_line(frustrumPoints[6], frustrumPoints[7], frustrumColor);//bottom
 		end::debug_renderer::add_line(frustrumPoints[7], frustrumPoints[4], frustrumColor);//left
+		DrawFrustrumNormal();
 	}
 
 
