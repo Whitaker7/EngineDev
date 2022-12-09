@@ -416,17 +416,17 @@ namespace end
 		//cross product results in the normal
 		normal = XMVector3Normalize(XMVector3Cross(topL2right, botLUp));
 
-		rightTrans = topL2right * 0.5f;
+		offsetVec = XMVector3Dot(normal, *(XMVECTOR*)(&frustrumPoints[4]));
+		offset;
+		rightTrans = topL2right * (offset /2);
 		downTrans = botLUp * 0.5f;
 
-		center = frustrumPoints[3] + (*(float3*)(&rightTrans));
+		center = frustrumPoints[3] - (*(float3*)(&rightTrans));
 		center = center - (*(float3*)(&downTrans));
+		XMStoreFloat(&offset, offsetVec);
 
 		frusPlanes[1].center = center;
 		frusPlanes[1].normal = normal;
-		offsetVec = XMVector3Dot(*(XMVECTOR*)(&frustrumPoints[4]), normal);
-		offset;
-		XMStoreFloat(&offset, offsetVec);
 		frusPlanes[1].offset = offset;
 	}
 
