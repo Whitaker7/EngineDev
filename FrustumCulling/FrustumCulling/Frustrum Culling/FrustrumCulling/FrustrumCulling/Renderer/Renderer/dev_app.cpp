@@ -296,7 +296,39 @@ namespace end
 
 	}
 
+	void DrawFrustrum(float4x4 playerPosMat)
+	{
+		float xPos = playerPosMat[3].x + playerPosMat[2].x;
+		float yPos = playerPosMat[3].y + playerPosMat[2].y;
+		float zPos = playerPosMat[3].z + playerPosMat[2].z;
 
+		float3 origin = playerPosMat[3].xyz;
+
+
+		XMVECTOR forDir = { playerPosMat[3].x, playerPosMat[3].y, playerPosMat[3].z };
+		forDir = XMVector3Normalize(forDir);
+		XMVECTOR rightDir = { playerPosMat[1].x, playerPosMat[1].y, playerPosMat[1].z };
+		rightDir = XMVector3Normalize(rightDir);
+
+		float3 rightDirection = *(float3*)(&rightDir);
+		float3 forwardDirection = *(float3*)(&forDir);
+
+		float4 frustrumColor ( 1.0f, 0.0f, 0.0f, 0.0f );
+
+		end::debug_renderer::add_line(origin + (forwardDirection * 1.0f) + (rightDirection * 0.5f),
+			origin + (forwardDirection * 1.0f) - (rightDirection * 0.5f),
+			frustrumColor);
+			
+		/*end::debug_renderer::add_line
+		end::debug_renderer::add_line
+		end::debug_renderer::add_line
+		end::debug_renderer::add_line
+
+		end::debug_renderer::add_line
+		end::debug_renderer::add_line
+		end::debug_renderer::add_line
+		end::debug_renderer::add_line*/
+	}
 
 
 	void dev_app_t::update(view_t& viewM, std::bitset<256> bitTab,int inputPoint[2])
@@ -487,6 +519,7 @@ namespace end
 		player = XMMatrixMultiply(playerRot, player);
 		XMStoreFloat4x4(&player44, player);
 
+		DrawFrustrum(*(float4x4*)(&player));
 		//drawPlayer
 		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._41 + player44._11, player44._42, player44._43 + player44._13), float4(1, 0, 0, 1));//x (right)
 		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._41, player44._42 + 1.0f, player44._43), float4(0, 1, 0, 1)); // y (up)
