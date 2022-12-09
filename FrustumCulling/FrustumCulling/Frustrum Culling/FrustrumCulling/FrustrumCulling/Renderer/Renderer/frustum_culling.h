@@ -4,7 +4,6 @@
 #include "math_types.h"
 
 // Note: You are free to make adjustments/additions to the declarations provided here.
-//test to commit
 
 namespace end
 {
