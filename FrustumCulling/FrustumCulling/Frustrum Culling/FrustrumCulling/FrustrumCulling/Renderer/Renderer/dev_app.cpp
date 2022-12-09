@@ -310,27 +310,55 @@ namespace end
 		XMVECTOR rightDir = { playerPosMat[0].x, playerPosMat[0].y, playerPosMat[0].z };
 		rightDir = XMVector3Normalize(rightDir);
 
-		float3 rightDirection = *(float3*)(&rightDir);
-		float3 forwardDirection = *(float3*)(&forDir);
+		float3 rightDirection = *(float3*)(&rightDir);// one unit to the right
+		float3 forwardDirection = *(float3*)(&forDir); //one unit forward
+		float3 upDirection(0, 1.0f, 0); //hardcoded becase not pitch or roll
 
 		float4 frustrumColor ( 1.0f, 0.0f, 0.0f, 0.0f );
 
-		end::debug_renderer::add_line(origin + forwardDirection,
-			origin,
-			frustrumColor);
-		end::debug_renderer::add_line(origin + rightDirection,
-			origin,
-			frustrumColor);
-			
-		/*end::debug_renderer::add_line
-		end::debug_renderer::add_line
-		end::debug_renderer::add_line
-		end::debug_renderer::add_line
+		//near z (1 unit out) 1 unit wide by 0.5 unit tall
+		end::debug_renderer::add_line(origin + forwardDirection +(upDirection *0.25f) + (rightDirection * 0.5f),
+			origin + forwardDirection + (upDirection * 0.25f) - (rightDirection * 0.5f),
+			frustrumColor);//top
+		end::debug_renderer::add_line(origin + forwardDirection - (upDirection * 0.25f) + (rightDirection * 0.5f),
+			origin + forwardDirection - (upDirection * 0.25f) - (rightDirection * 0.5f),
+			frustrumColor);//bottom
+		end::debug_renderer::add_line(origin + forwardDirection + (upDirection * 0.25f) + (rightDirection * 0.5f),
+			origin + forwardDirection - (upDirection * 0.25f) + (rightDirection * 0.5f),
+			frustrumColor);//right
+		end::debug_renderer::add_line(origin + forwardDirection + (upDirection * 0.25f) - (rightDirection * 0.5f),
+			origin + forwardDirection - (upDirection * 0.25f) - (rightDirection * 0.5f),
+			frustrumColor);//left
 
-		end::debug_renderer::add_line
-		end::debug_renderer::add_line
-		end::debug_renderer::add_line
-		end::debug_renderer::add_line*/
+
+		//connecting planes (near to far)
+		end::debug_renderer::add_line(origin + forwardDirection + (upDirection * 0.25f) - (rightDirection * 0.5f),
+			origin + (forwardDirection * 10) + (upDirection * 2.5f) - (rightDirection * 5),
+			frustrumColor);//top left
+		end::debug_renderer::add_line(origin + forwardDirection + (upDirection * 0.25f) + (rightDirection * 0.5f),
+			origin + (forwardDirection * 10) + (upDirection * 2.5f) + (rightDirection * 5),
+			frustrumColor);//top right
+		end::debug_renderer::add_line(origin + forwardDirection - (upDirection * 0.25f) - (rightDirection * 0.5f),
+			origin + (forwardDirection * 10) - (upDirection * 2.5f) - (rightDirection * 5),
+			frustrumColor);//bottom left
+		end::debug_renderer::add_line(origin + forwardDirection - (upDirection * 0.25f) + (rightDirection * 0.5f),
+			origin + (forwardDirection * 10) - (upDirection * 2.5f) + (rightDirection * 5),
+			frustrumColor);//bottom right
+
+		//far z (10 units out)	10 units wide by 5 units tall
+		end::debug_renderer::add_line(origin + (forwardDirection * 10) + (upDirection * 2.5f) + (rightDirection * 5),
+			origin + (forwardDirection * 10) + (upDirection * 2.5f) - (rightDirection * 5),
+			frustrumColor);//top
+		end::debug_renderer::add_line(origin + (forwardDirection * 10) - (upDirection * 2.5f) + (rightDirection * 5),
+			origin + (forwardDirection * 10) - (upDirection * 2.5f) - (rightDirection * 5),
+			frustrumColor);//bottom
+		end::debug_renderer::add_line(origin + (forwardDirection * 10) + (upDirection * 2.5f) + (rightDirection * 5),
+			origin + (forwardDirection * 10) - (upDirection * 2.5f) + (rightDirection * 5),
+			frustrumColor);//right
+		end::debug_renderer::add_line(origin + (forwardDirection * 10) + (upDirection * 2.5f) - (rightDirection * 5),
+			origin + (forwardDirection * 10) - (upDirection * 2.5f) - (rightDirection * 5),
+			frustrumColor);//left
+			
 	}
 
 
