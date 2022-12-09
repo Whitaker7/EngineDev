@@ -1,9 +1,9 @@
 #include "dev_app.h"
-#include "math_types.h"
 #include "debug_renderer.h"
 #include <iostream>
 #include "pools.h"
 #include <DirectXMath.h>
+#include "frustum_culling.h"
 //#include <WinUser.h>
 using namespace DirectX;
 //TODO include debug_renderer.h and pools.h and anything else you might need here
@@ -21,6 +21,7 @@ namespace end
 	float creationTimerHolder = 0.05f;//set to 0.05 for best emission
 	float creationTimer = creationTimerHolder;
 	float playerSpeed = 3;
+	float3 frustrumPoints[8]; //0-3 are near plane, 4-8 are far plane, both are clockwise starting at top left
 
 
 
@@ -298,67 +299,46 @@ namespace end
 
 	void DrawFrustrum(float4x4 playerPosMat)
 	{
-		float xPos = playerPosMat[3].x + playerPosMat[2].x;
-		float yPos = playerPosMat[3].y + playerPosMat[2].y;
-		float zPos = playerPosMat[3].z + playerPosMat[2].z;
-
+		//origin of player matrix
 		float3 origin = playerPosMat[3].xyz;
 
-
-		XMVECTOR forDir = { playerPosMat[2].x, playerPosMat[2].y, playerPosMat[2].z };
-		forDir = XMVector3Normalize(forDir);
-		XMVECTOR rightDir = { playerPosMat[0].x, playerPosMat[0].y, playerPosMat[0].z };
-		rightDir = XMVector3Normalize(rightDir);
-
-		float3 rightDirection = *(float3*)(&rightDir);// one unit to the right
-		float3 forwardDirection = *(float3*)(&forDir); //one unit forward
+		float3 rightDirection(playerPosMat[0].x, playerPosMat[0].y, playerPosMat[0].z);// one unit to the right
+		float3 forwardDirection(playerPosMat[2].x, playerPosMat[2].y, playerPosMat[2].z); //one unit forward
 		float3 upDirection(0, 1.0f, 0); //hardcoded becase not pitch or roll
 
 		float4 frustrumColor ( 1.0f, 0.0f, 0.0f, 0.0f );
 
+		//load an array of points to represent the points of the frustrum
+		//near plane
+		frustrumPoints[0] = origin + forwardDirection + (upDirection * 0.25f) - (rightDirection * 0.5f);//top left
+		frustrumPoints[1] = origin + forwardDirection + (upDirection * 0.25f) + (rightDirection * 0.5f);//top right
+		frustrumPoints[2] = origin + forwardDirection - (upDirection * 0.25f) + (rightDirection * 0.5f);//bottom right
+		frustrumPoints[3] = origin + forwardDirection - (upDirection * 0.25f) - (rightDirection * 0.5f);//bottom left
+		//farplane
+		frustrumPoints[4] = origin + (forwardDirection * 10) + (upDirection * 2.5f) - (rightDirection * 5); //top left
+		frustrumPoints[5] = origin + (forwardDirection * 10) + (upDirection * 2.5f) + (rightDirection * 5); //top right
+		frustrumPoints[6] = origin + (forwardDirection * 10) - (upDirection * 2.5f) + (rightDirection * 5); //bottom right
+		frustrumPoints[7] = origin + (forwardDirection * 10) - (upDirection * 2.5f) - (rightDirection * 5); //bottom left
+
+
 		//near z (1 unit out) 1 unit wide by 0.5 unit tall
-		end::debug_renderer::add_line(origin + forwardDirection +(upDirection *0.25f) + (rightDirection * 0.5f),
-			origin + forwardDirection + (upDirection * 0.25f) - (rightDirection * 0.5f),
-			frustrumColor);//top
-		end::debug_renderer::add_line(origin + forwardDirection - (upDirection * 0.25f) + (rightDirection * 0.5f),
-			origin + forwardDirection - (upDirection * 0.25f) - (rightDirection * 0.5f),
-			frustrumColor);//bottom
-		end::debug_renderer::add_line(origin + forwardDirection + (upDirection * 0.25f) + (rightDirection * 0.5f),
-			origin + forwardDirection - (upDirection * 0.25f) + (rightDirection * 0.5f),
-			frustrumColor);//right
-		end::debug_renderer::add_line(origin + forwardDirection + (upDirection * 0.25f) - (rightDirection * 0.5f),
-			origin + forwardDirection - (upDirection * 0.25f) - (rightDirection * 0.5f),
-			frustrumColor);//left
+		end::debug_renderer::add_line(frustrumPoints[0], frustrumPoints[1], frustrumColor);//top
+		end::debug_renderer::add_line(frustrumPoints[1], frustrumPoints[2], frustrumColor);//right
+		end::debug_renderer::add_line(frustrumPoints[2], frustrumPoints[3], frustrumColor);//bottom
+		end::debug_renderer::add_line(frustrumPoints[3], frustrumPoints[0], frustrumColor);//left
 
 
 		//connecting planes (near to far)
-		end::debug_renderer::add_line(origin + forwardDirection + (upDirection * 0.25f) - (rightDirection * 0.5f),
-			origin + (forwardDirection * 10) + (upDirection * 2.5f) - (rightDirection * 5),
-			frustrumColor);//top left
-		end::debug_renderer::add_line(origin + forwardDirection + (upDirection * 0.25f) + (rightDirection * 0.5f),
-			origin + (forwardDirection * 10) + (upDirection * 2.5f) + (rightDirection * 5),
-			frustrumColor);//top right
-		end::debug_renderer::add_line(origin + forwardDirection - (upDirection * 0.25f) - (rightDirection * 0.5f),
-			origin + (forwardDirection * 10) - (upDirection * 2.5f) - (rightDirection * 5),
-			frustrumColor);//bottom left
-		end::debug_renderer::add_line(origin + forwardDirection - (upDirection * 0.25f) + (rightDirection * 0.5f),
-			origin + (forwardDirection * 10) - (upDirection * 2.5f) + (rightDirection * 5),
-			frustrumColor);//bottom right
+		end::debug_renderer::add_line(frustrumPoints[0], frustrumPoints[4], frustrumColor);//top left
+		end::debug_renderer::add_line(frustrumPoints[1], frustrumPoints[5], frustrumColor);//top right
+		end::debug_renderer::add_line(frustrumPoints[2], frustrumPoints[6], frustrumColor);//bottom right
+		end::debug_renderer::add_line(frustrumPoints[3], frustrumPoints[7], frustrumColor);//bottom left
 
 		//far z (10 units out)	10 units wide by 5 units tall
-		end::debug_renderer::add_line(origin + (forwardDirection * 10) + (upDirection * 2.5f) + (rightDirection * 5),
-			origin + (forwardDirection * 10) + (upDirection * 2.5f) - (rightDirection * 5),
-			frustrumColor);//top
-		end::debug_renderer::add_line(origin + (forwardDirection * 10) - (upDirection * 2.5f) + (rightDirection * 5),
-			origin + (forwardDirection * 10) - (upDirection * 2.5f) - (rightDirection * 5),
-			frustrumColor);//bottom
-		end::debug_renderer::add_line(origin + (forwardDirection * 10) + (upDirection * 2.5f) + (rightDirection * 5),
-			origin + (forwardDirection * 10) - (upDirection * 2.5f) + (rightDirection * 5),
-			frustrumColor);//right
-		end::debug_renderer::add_line(origin + (forwardDirection * 10) + (upDirection * 2.5f) - (rightDirection * 5),
-			origin + (forwardDirection * 10) - (upDirection * 2.5f) - (rightDirection * 5),
-			frustrumColor);//left
-			
+		end::debug_renderer::add_line(frustrumPoints[4], frustrumPoints[5], frustrumColor);//top
+		end::debug_renderer::add_line(frustrumPoints[5], frustrumPoints[6], frustrumColor);//right
+		end::debug_renderer::add_line(frustrumPoints[6], frustrumPoints[7], frustrumColor);//bottom
+		end::debug_renderer::add_line(frustrumPoints[7], frustrumPoints[4], frustrumColor);//left
 	}
 
 
