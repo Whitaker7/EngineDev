@@ -305,6 +305,9 @@ namespace end
 
 	}
 
+	//there be dragons here
+	//reuses the same few variables to find each plans offset, center, and normal data
+	//then loads that data into an array of plane struct objects
 	void CalculateFrustrumPlanes()
 	{
 		//near plane
@@ -348,66 +351,64 @@ namespace end
 		frusPlanes[1].offset = offset;
 
 		//left plane
-		topL2right = *(XMVECTOR*)(&frustrumPoints[4]) - *(XMVECTOR*)(&frustrumPoints[5]);
-		botLUp = *(XMVECTOR*)(&frustrumPoints[5]) - *(XMVECTOR*)(&frustrumPoints[6]);
-		XMVECTOR back2front;
+		topL2right = *(XMVECTOR*)(&frustrumPoints[0]) - *(XMVECTOR*)(&frustrumPoints[4]);
+		botLUp = *(XMVECTOR*)(&frustrumPoints[4]) - *(XMVECTOR*)(&frustrumPoints[7]);
 
 		//cross product results in the normal
 		normal = XMVector3Normalize(XMVector3Cross(topL2right, botLUp));
 
 		rightTrans = topL2right * 0.5f;
-		downTrans = botLUp * 0.5f;
-		XMVECTOR zTrans;
+		downTrans = botLUp * 0.25f;
 
-		center = frustrumPoints[4] - (*(float3*)(&rightTrans));
+		center = frustrumPoints[4] + (*(float3*)(&rightTrans));
 		center = center - (*(float3*)(&downTrans));
 
-		frusPlanes[1].center = center;
-		frusPlanes[1].normal = normal;
+		frusPlanes[2].center = center;
+		frusPlanes[2].normal = normal;
 		offsetVec = XMVector3Dot(*(XMVECTOR*)(&frustrumPoints[4]), normal);
 		offset;
 		XMStoreFloat(&offset, offsetVec);
-		frusPlanes[1].offset = offset;
+		frusPlanes[2].offset = offset;
 
 		//top plane
-		topL2right = *(XMVECTOR*)(&frustrumPoints[4]) - *(XMVECTOR*)(&frustrumPoints[5]);
-		botLUp = *(XMVECTOR*)(&frustrumPoints[5]) - *(XMVECTOR*)(&frustrumPoints[6]);
+		topL2right = *(XMVECTOR*)(&frustrumPoints[5]) - *(XMVECTOR*)(&frustrumPoints[4]);
+		botLUp = *(XMVECTOR*)(&frustrumPoints[4]) - *(XMVECTOR*)(&frustrumPoints[0]);
 
 		//cross product results in the normal
 		normal = XMVector3Normalize(XMVector3Cross(topL2right, botLUp));
 
-		rightTrans = topL2right * 0.5f;
+		rightTrans = topL2right * 0.25f;
 		downTrans = botLUp * 0.5f;
 
-		center = frustrumPoints[4] - (*(float3*)(&rightTrans));
+		center = frustrumPoints[4] + (*(float3*)(&rightTrans));
 		center = center - (*(float3*)(&downTrans));
 
-		frusPlanes[1].center = center;
-		frusPlanes[1].normal = normal;
+		frusPlanes[3].center = center;
+		frusPlanes[3].normal = normal;
 		offsetVec = XMVector3Dot(*(XMVECTOR*)(&frustrumPoints[4]), normal);
 		offset;
 		XMStoreFloat(&offset, offsetVec);
-		frusPlanes[1].offset = offset;
+		frusPlanes[3].offset = offset;
 
 		//right plane
-		topL2right = *(XMVECTOR*)(&frustrumPoints[4]) - *(XMVECTOR*)(&frustrumPoints[5]);
-		botLUp = *(XMVECTOR*)(&frustrumPoints[5]) - *(XMVECTOR*)(&frustrumPoints[6]);
+		topL2right = *(XMVECTOR*)(&frustrumPoints[5]) - *(XMVECTOR*)(&frustrumPoints[1]);
+		botLUp = *(XMVECTOR*)(&frustrumPoints[1]) - *(XMVECTOR*)(&frustrumPoints[2]);
 
 		//cross product results in the normal
 		normal = XMVector3Normalize(XMVector3Cross(topL2right, botLUp));
 
 		rightTrans = topL2right * 0.5f;
-		downTrans = botLUp * 0.5f;
+		downTrans = botLUp * 2.5f;
 
-		center = frustrumPoints[4] - (*(float3*)(&rightTrans));
+		center = frustrumPoints[1] + (*(float3*)(&rightTrans));
 		center = center - (*(float3*)(&downTrans));
 
-		frusPlanes[1].center = center;
-		frusPlanes[1].normal = normal;
+		frusPlanes[4].center = center;
+		frusPlanes[4].normal = normal;
 		offsetVec = XMVector3Dot(*(XMVECTOR*)(&frustrumPoints[4]), normal);
 		offset;
 		XMStoreFloat(&offset, offsetVec);
-		frusPlanes[1].offset = offset;
+		frusPlanes[4].offset = offset;
 
 		//bottom plane
 		topL2right = *(XMVECTOR*)(&frustrumPoints[2]) - *(XMVECTOR*)(&frustrumPoints[3]);
@@ -416,18 +417,20 @@ namespace end
 		//cross product results in the normal
 		normal = XMVector3Normalize(XMVector3Cross(topL2right, botLUp));
 
-		offsetVec = XMVector3Dot(normal, *(XMVECTOR*)(&frustrumPoints[4]));
-		offset;
-		rightTrans = topL2right * (offset /2);
+		rightTrans = topL2right * 2.5f;
 		downTrans = botLUp * 0.5f;
 
-		center = frustrumPoints[3] - (*(float3*)(&rightTrans));
+		center = frustrumPoints[3] + (*(float3*)(&rightTrans));
 		center = center - (*(float3*)(&downTrans));
-		XMStoreFloat(&offset, offsetVec);
 
-		frusPlanes[1].center = center;
-		frusPlanes[1].normal = normal;
-		frusPlanes[1].offset = offset;
+		frusPlanes[5].center = center;
+		frusPlanes[5].normal = normal;
+		offsetVec = XMVector3Dot(*(XMVECTOR*)(&frustrumPoints[4]), normal);
+		offset;
+		XMStoreFloat(&offset, offsetVec);
+		frusPlanes[5].offset = offset;
+
+		
 	}
 
 	//draws frustrums normals.
@@ -439,7 +442,7 @@ namespace end
 	{
 		CalculateFrustrumPlanes();
 
-		for (int j = 0; j < 2; j++)
+		for (int j = 0; j < 6; j++)
 		{
 			float prevMod = 0;
 			for (int i = 0; i < 10; i++)
