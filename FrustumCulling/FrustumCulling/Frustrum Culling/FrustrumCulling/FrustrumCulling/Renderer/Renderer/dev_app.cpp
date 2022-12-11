@@ -39,7 +39,8 @@ namespace end
 		float xyz[3]; //width height depth 
 		float3 center; //center of mesh
 		float3 extents; //furthest point from center
-		float4 color; 
+		float4 color;
+		bool collision = false;
 	};
 
 	AABB aabb[6];
@@ -152,7 +153,17 @@ namespace end
 			//by translating it upwards half its height
 			aabb[i].center.y = aabb[i].xyz[1] * 0.5f;
 
-			//how to calculate the extents????
+			//extents will act as the radius (top down )
+			float3 topCenter = aabb[i].center;
+			topCenter.y = aabb[i].xyz[1];
+			float3 vec3 = float3(aabb[i].center.x - (aabb[i].xyz[0] * 0.5f), aabb[i].xyz[1], aabb[i].center.z + (aabb[i].xyz[2] * 0.5f));
+			XMVECTOR radius = { 0,0,0,0 };
+			XMVECTOR vec_one = *(XMVECTOR*)(&vec3);
+			XMVECTOR vec_two = *(XMVECTOR*)(&topCenter);
+			radius = vec_one - vec_two;
+			radius = XMQuaternionLength(radius);
+
+			aabb[i].extents = *(float3*)(&radius);
 
 			//set each color to a light blue
 			aabb[i].color = float4(1.0f, 1.0f, 0, 1.0f);
@@ -201,6 +212,36 @@ namespace end
 				float3(aabb[i].center.x + (aabb[i].xyz[0] * 0.5f), 0.1f, aabb[i].center.z - (aabb[i].xyz[2] * 0.5f)),
 				aabb[i].color);//right bottom
 
+		}
+	}
+
+	void TestAABB()
+	{
+		float3 vec_one;
+		float distance;
+		int inFront;
+		//test all objects every frame
+		for (int j = 0; j < 6; j++)
+		{
+			inFront = 0;
+			//test each plane against the center of the object
+			for (int i = 0; i < 6; i++)
+			{
+				vec_one = aabb[j].center - frusPlanes[i].center;
+				XMStoreFloat(&distance, XMVector3Dot(*(XMVECTOR*)(&vec_one), *(XMVECTOR*)(&frusPlanes[i].normal)));
+				if (distance > 0)
+				{
+					inFront++;
+				}
+			}
+			if (inFront == 6)
+			{
+				aabb[j].color = float4(0.3f, 1.0f, 0, 1.0f);
+			}
+			else
+			{
+				aabb[j].color = float4(1.0f, 1.0f, 0, 1.0f);
+			}
 		}
 	}
 	
@@ -790,6 +831,7 @@ namespace end
 #pragma endregion
 
 		//after moving the player and frustrum let us calculate frustrum collision and draw the aabb's
+		TestAABB();
 		DrawAABB();
 
 
