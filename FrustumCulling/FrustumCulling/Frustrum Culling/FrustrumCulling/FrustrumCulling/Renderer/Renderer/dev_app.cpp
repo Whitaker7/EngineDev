@@ -36,6 +36,7 @@ namespace end
 	//there will be no pitch or roll from the player/frustrum
 	struct AABB
 	{
+		float xyz[3]; //width height depth 
 		float3 center; //center of mesh
 		float3 extents; //furthest point from center
 		float4 color; 
@@ -136,9 +137,71 @@ namespace end
 		part.
 	}*/
 
-	void AABBSetup()
+	void dev_app_t::AABBSetup()
 	{
+		for (int i = 0; i < 6; i++)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				aabb[i].xyz[j] = Randf(1, 3);//blocks cannot be smaller than one unit or bigger than 3
+			}
+			// places aabb randonly on the grid
+			aabb[i].center.x = Randf(-10, 10);
+			aabb[i].center.z = Randf(-10, 10);
+			//orientates the aabb so the bottom rests on the grid
+			//by translating it upwards half its height
+			aabb[i].center.y = aabb[i].xyz[1] * 0.5f;
 
+			//how to calculate the extents????
+
+			//set each color to a light blue
+			aabb[i].color = float4(1.0f, 1.0f, 0, 1.0f);
+		}
+	}
+
+	void DrawAABB()
+	{
+		for (int i = 0; i < 6; i++)
+		{
+			end::debug_renderer::add_line(float3(aabb[i].center.x - (aabb[i].xyz[0] * 0.5f), 0.1f, aabb[i].center.z - (aabb[i].xyz[2] * 0.5f)),
+				float3(aabb[i].center.x + (aabb[i].xyz[0] * 0.5f), 0.1f, aabb[i].center.z - (aabb[i].xyz[2] * 0.5f)),
+				aabb[i].color);//bottomfront
+			end::debug_renderer::add_line(float3(aabb[i].center.x - (aabb[i].xyz[0] * 0.5f), 0.1f, aabb[i].center.z + (aabb[i].xyz[2] * 0.5f)),
+				float3(aabb[i].center.x + (aabb[i].xyz[0] * 0.5f), 0.1f, aabb[i].center.z + (aabb[i].xyz[2] * 0.5f)),
+				aabb[i].color);//bottomback
+			end::debug_renderer::add_line(float3(aabb[i].center.x - (aabb[i].xyz[0] * 0.5f), aabb[i].xyz[1], aabb[i].center.z - (aabb[i].xyz[2] * 0.5f)),
+				float3(aabb[i].center.x + (aabb[i].xyz[0] * 0.5f), aabb[i].xyz[1], aabb[i].center.z - (aabb[i].xyz[2] * 0.5f)),
+				aabb[i].color);//topfront
+			end::debug_renderer::add_line(float3(aabb[i].center.x - (aabb[i].xyz[0] * 0.5f), aabb[i].xyz[1], aabb[i].center.z + (aabb[i].xyz[2] * 0.5f)),
+				float3(aabb[i].center.x + (aabb[i].xyz[0] * 0.5f), aabb[i].xyz[1], aabb[i].center.z + (aabb[i].xyz[2] * 0.5f)),
+				aabb[i].color);//topback
+			end::debug_renderer::add_line(float3(aabb[i].center.x - (aabb[i].xyz[0] * 0.5f), 0.1f, aabb[i].center.z - (aabb[i].xyz[2] * 0.5f)),
+				float3(aabb[i].center.x - (aabb[i].xyz[0] * 0.5f), aabb[i].xyz[1], aabb[i].center.z - (aabb[i].xyz[2] * 0.5f)),
+				aabb[i].color);//left front
+			end::debug_renderer::add_line(float3(aabb[i].center.x - (aabb[i].xyz[0] * 0.5f), 0.1f, aabb[i].center.z + (aabb[i].xyz[2] * 0.5f)),
+				float3(aabb[i].center.x - (aabb[i].xyz[0] * 0.5f), aabb[i].xyz[1], aabb[i].center.z + (aabb[i].xyz[2] * 0.5f)),
+				aabb[i].color);//left back
+			end::debug_renderer::add_line(float3(aabb[i].center.x + (aabb[i].xyz[0] * 0.5f), 0.1f, aabb[i].center.z - (aabb[i].xyz[2] * 0.5f)),
+				float3(aabb[i].center.x + (aabb[i].xyz[0] * 0.5f), aabb[i].xyz[1], aabb[i].center.z - (aabb[i].xyz[2] * 0.5f)),
+				aabb[i].color);//right front
+			end::debug_renderer::add_line(float3(aabb[i].center.x + (aabb[i].xyz[0] * 0.5f), 0.1f, aabb[i].center.z + (aabb[i].xyz[2] * 0.5f)),
+				float3(aabb[i].center.x + (aabb[i].xyz[0] * 0.5f), aabb[i].xyz[1], aabb[i].center.z + (aabb[i].xyz[2] * 0.5f)),
+				aabb[i].color);//right back
+			//connectors
+			end::debug_renderer::add_line(float3(aabb[i].center.x - (aabb[i].xyz[0] * 0.5f), aabb[i].xyz[1], aabb[i].center.z + (aabb[i].xyz[2] * 0.5f)),
+				float3(aabb[i].center.x - (aabb[i].xyz[0] * 0.5f), aabb[i].xyz[1], aabb[i].center.z - (aabb[i].xyz[2] * 0.5f)),
+				aabb[i].color);//left top
+			end::debug_renderer::add_line(float3(aabb[i].center.x - (aabb[i].xyz[0] * 0.5f), 0.1f, aabb[i].center.z + (aabb[i].xyz[2] * 0.5f)),
+				float3(aabb[i].center.x - (aabb[i].xyz[0] * 0.5f), 0.1f, aabb[i].center.z - (aabb[i].xyz[2] * 0.5f)),
+				aabb[i].color);//left bottom
+			end::debug_renderer::add_line(float3(aabb[i].center.x + (aabb[i].xyz[0] * 0.5f), aabb[i].xyz[1], aabb[i].center.z + (aabb[i].xyz[2] * 0.5f)),
+				float3(aabb[i].center.x + (aabb[i].xyz[0] * 0.5f), aabb[i].xyz[1], aabb[i].center.z - (aabb[i].xyz[2] * 0.5f)),
+				aabb[i].color);//right top
+			end::debug_renderer::add_line(float3(aabb[i].center.x + (aabb[i].xyz[0] * 0.5f), 0.1f, aabb[i].center.z + (aabb[i].xyz[2] * 0.5f)),
+				float3(aabb[i].center.x + (aabb[i].xyz[0] * 0.5f), 0.1f, aabb[i].center.z - (aabb[i].xyz[2] * 0.5f)),
+				aabb[i].color);//right bottom
+
+		}
 	}
 	
 	XMMATRIX LookAt(XMVECTOR pos, XMVECTOR target, XMVECTOR localUp)
@@ -726,6 +789,10 @@ namespace end
 		}
 #pragma endregion
 
+		//after moving the player and frustrum let us calculate frustrum collision and draw the aabb's
+		DrawAABB();
+
+
 #pragma region LookAt
 		//draws lookat
 		XMVECTOR lookAtPos = XMVectorSet(-5.0f, 2.0f, -5.0f, 1);
@@ -767,7 +834,7 @@ namespace end
 
 		//change a color over time
 #pragma region change line color
-		if (colorChange == true)
+		/*if (colorChange == true)
 		{
 			color.x -= 0.25f * delta_time;
 			color.y += 0.25f * delta_time;
@@ -785,7 +852,7 @@ namespace end
 		if (color.x < 0)
 		{
 			colorChange = false;
-		}
+		}*/
 #pragma endregion
 
 	}
