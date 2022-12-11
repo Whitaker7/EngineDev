@@ -39,6 +39,7 @@ namespace end
 		float xyz[3]; //width height depth 
 		float3 center; //center of mesh
 		float3 extents; //furthest point from center
+		float radius;
 		float4 color;
 		bool collision = false;
 	};
@@ -155,17 +156,17 @@ namespace end
 
 			//extents will act as the radius (top down )
 			// the conversions between float3 and xmvectors will be the death of me
-			float3 bottomCenter = aabb[i].center;
-			bottomCenter.y = 0;
+			float3 topCenter = aabb[i].center;
+			topCenter.y = aabb[i].xyz[1];
 			float3 vec3 = float3(aabb[i].center.x - (aabb[i].xyz[0] * 0.5f), aabb[i].xyz[1], aabb[i].center.z + (aabb[i].xyz[2] * 0.5f));
 			XMVECTOR radius = { 0,0,0,0 };
 			XMVECTOR vec_one = *(XMVECTOR*)(&vec3);
-			XMVECTOR vec_two = *(XMVECTOR*)(&bottomCenter);
+			XMVECTOR vec_two = *(XMVECTOR*)(&topCenter);
 			radius = vec_one - vec_two;
 			radius = XMQuaternionLength(radius);
 
 			aabb[i].extents = *(float3*)(&radius);
-
+			XMStoreFloat(&aabb[i].radius, radius);
 			//set each color to a light blue
 			aabb[i].color = float4(1.0f, 1.0f, 0, 1.0f);
 		}
@@ -230,11 +231,13 @@ namespace end
 			{
 				vec_one = aabb[j].center - frusPlanes[i].center;
 				XMStoreFloat(&distance, XMVector3Dot(*(XMVECTOR*)(&vec_one), *(XMVECTOR*)(&frusPlanes[i].normal)));
-				if (distance > 0)
+				if (distance + aabb[j].radius > 0)
 				{
+					//increase count of planes object is in front of
 					inFront++;
 				}
 			}
+			//if AABB is infront of all frustrum planes. it is within the frustrum and will be drawn green
 			if (inFront == 6)
 			{
 				aabb[j].color = float4(0.3f, 1.0f, 0, 1.0f);
@@ -428,6 +431,7 @@ namespace end
 	//there be dragons here
 	//reuses the same few variables to find each plans offset, center, and normal data
 	//then loads that data into an array of plane struct objects
+	//array order: near far left top right bottom
 	void CalculateFrustrumPlanes()
 	{
 		//near plane
