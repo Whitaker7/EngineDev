@@ -32,6 +32,16 @@ namespace end
 
 	FRUSTRUM_PLANE frusPlanes[6];
 
+	//i really only need to check the collison on the x and z planes since
+	//there will be no pitch or roll from the player/frustrum
+	struct AABB
+	{
+		float3 center; //center of mesh
+		float3 extents; //furthest point from center
+		float4 color; 
+	};
+
+	AABB aabb[6];
 
 	//mouse movement variables
 	int xPos = 0;
@@ -125,6 +135,11 @@ namespace end
 	{
 		part.
 	}*/
+
+	void AABBSetup()
+	{
+
+	}
 	
 	XMMATRIX LookAt(XMVECTOR pos, XMVECTOR target, XMVECTOR localUp)
 	{
@@ -441,6 +456,8 @@ namespace end
 	void DrawFrustrumNormal()
 	{
 		CalculateFrustrumPlanes();
+
+
 
 		for (int j = 0; j < 6; j++)
 		{

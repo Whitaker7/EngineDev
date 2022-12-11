@@ -187,6 +187,7 @@ MSG begin_main_loop()
 	MSG msg;
 
 	end::renderer_t renderer(main_hwnd);
+	dev_app.AABBSetup();
 
 	// Main application loop:
 	while (true)

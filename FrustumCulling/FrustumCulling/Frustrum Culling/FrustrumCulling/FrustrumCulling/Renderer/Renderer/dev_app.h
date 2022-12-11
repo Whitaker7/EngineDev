@@ -15,6 +15,8 @@ namespace end
 
 		dev_app_t();
 
+		void AABBSetup();
+
 		double get_delta_time()const;
 	};
 }
