@@ -154,12 +154,13 @@ namespace end
 			aabb[i].center.y = aabb[i].xyz[1] * 0.5f;
 
 			//extents will act as the radius (top down )
-			float3 topCenter = aabb[i].center;
-			topCenter.y = aabb[i].xyz[1];
+			// the conversions between float3 and xmvectors will be the death of me
+			float3 bottomCenter = aabb[i].center;
+			bottomCenter.y = 0;
 			float3 vec3 = float3(aabb[i].center.x - (aabb[i].xyz[0] * 0.5f), aabb[i].xyz[1], aabb[i].center.z + (aabb[i].xyz[2] * 0.5f));
 			XMVECTOR radius = { 0,0,0,0 };
 			XMVECTOR vec_one = *(XMVECTOR*)(&vec3);
-			XMVECTOR vec_two = *(XMVECTOR*)(&topCenter);
+			XMVECTOR vec_two = *(XMVECTOR*)(&bottomCenter);
 			radius = vec_one - vec_two;
 			radius = XMQuaternionLength(radius);
 
