@@ -144,6 +144,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="blob.cpp" />
+    <ClCompile Include="bvh.cpp" />
     <ClCompile Include="debug_renderer.cpp" />
     <ClCompile Include="dev_app.cpp" />
     <ClCompile Include="main.cpp" />
@@ -151,6 +152,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="blob.h" />
+    <ClInclude Include="bvh.h" />
     <ClInclude Include="d3d11_renderer_impl.h" />
     <ClInclude Include="debug_renderer.h" />
     <ClInclude Include="dev_app.h" />
