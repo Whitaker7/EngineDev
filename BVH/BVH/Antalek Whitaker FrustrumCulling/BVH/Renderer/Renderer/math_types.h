@@ -252,6 +252,13 @@ namespace end
 
 	using float4x4 = std::array< float4, 4 >;
 	using float4x4_a = std::array< float4_a, 4 >;
+
+	struct pos_norm_uv_vertex
+	{
+		float3 pos = { 0.0f, 0.0f, 0.0f };
+		float3 norm = { 0.0f, 0.0f, 0.0f };
+		float2 uv = { 0.0f, 0.0f };
+	};
 }
 
 namespace end

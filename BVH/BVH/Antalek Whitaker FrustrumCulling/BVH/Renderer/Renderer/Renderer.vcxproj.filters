@@ -33,6 +33,9 @@
     <ClCompile Include="debug_renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="bvh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="d3d11_renderer_impl.h">
@@ -59,6 +62,9 @@
     <ClInclude Include="frustum_culling.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="bvh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shaders\ps_cube.hlsl">
@@ -71,6 +77,9 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="shaders\vs_line.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders\pos_norm_uv_shader.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
