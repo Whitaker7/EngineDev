@@ -148,6 +148,20 @@ namespace end
 
 				context->Draw(end::debug_renderer::get_line_vert_count(), 0);
 			}
+
+			/*context->VSSetShader(vertex_shader[VERTEX_SHADER::POS_NORM_UV], nullptr, 0);
+			context->PSSetShader(pixel_shader[PIXEL_SHADER::BUFFERLESS_CUBE], nullptr, 0);
+			context->VSSetConstantBuffers(0, 1, &constant_buffer[CONSTANT_BUFFER::MVP]);
+
+			UINT stride = sizeof(pos_norm_uv_vertex);
+			UINT offset = 0;
+
+			context->IASetVertexBuffers(0, 1, &vertex_buffer[VERTEX_BUFFER::TERRAIN], &stride, &offset);
+			context->IASetInputLayout(input_layout[INPUT_LAYOUT::POS_NORM_UV]);
+			context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+			context->Draw(terrain_vert_count, 0);*/
+
 			swapchain->Present(0, 0);
 
 			end::debug_renderer::clear_lines();
@@ -374,6 +388,26 @@ namespace end
 			assert(!FAILED(hr));
 
 		}
+
+		////pos_norm_uv
+		//{
+		//	binary_blob_t vs_blob = load_binary_blob("pos_norm_uv_shader.cso");
+
+		//	HRESULT hr = device->CreateVertexShader(vs_blob.data(), vs_blob.size(), NULL, &vertex_shader[VERTEX_SHADER::POS_NORM_UV]);
+
+		//	assert(!FAILED(hr));
+
+		//	D3D11_INPUT_ELEMENT_DESC ied[] =
+		//	{
+		//		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		//		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3d11,D3D10_INPUT_PER_VERTEX_DATA, 0},
+		//		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		//	};
+
+		//	hr = device->CreateInputLayout(ied, 3, vs_blob.data(), vs_blob.size(), &input_layout[INPUTLAYOUT::POS_NORM_US]);
+
+		//	assert(!FAILED(hr));
+		//}
 
 		void create_constant_buffers()
 		{

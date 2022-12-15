@@ -4,6 +4,12 @@
 #include "pools.h"
 #include <DirectXMath.h>
 #include "frustum_culling.h"
+#include <vector>
+
+#include <iostream>
+#include <fstream>
+#include <string>
+
 //#include <WinUser.h>
 using namespace DirectX;
 //TODO include debug_renderer.h and pools.h and anything else you might need here
@@ -79,6 +85,28 @@ namespace end
 	XMFLOAT4X4 lookAt44;
 	XMMATRIX turnTo = XMMatrixTranslation(5.0f, 2.0f, 5.0f);;
 	XMFLOAT4X4 turnTo44;
+
+	//read from bin file
+	std::vector<float3> verts; 
+	int numVerts;
+	
+	void dev_app_t::ReadVerts()
+	{
+		char* buffer = new char[15];
+		std::ifstream terrainFile;
+		terrainFile.open("../../../../terrain.bin");
+		if (terrainFile.is_open())
+		{
+
+			std::cout << "file opened\n";
+			terrainFile.read((char*)&numVerts, sizeof(numVerts));
+			//sscanf(buffer, "%d", &numVerts);
+			std::cout << "numVerts: " << numVerts;
+			verts.resize(numVerts);
+			terrainFile.read((char*)verts.data(), sizeof(float3) * numVerts);
+		}
+	}
+	
 
 	struct Particle
 	{

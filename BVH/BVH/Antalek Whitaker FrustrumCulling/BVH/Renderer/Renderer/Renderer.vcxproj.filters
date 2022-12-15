@@ -79,9 +79,6 @@
     <FxCompile Include="shaders\vs_line.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="shaders\pos_norm_uv_shader.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\mvp.hlsli">

@@ -188,6 +188,7 @@ MSG begin_main_loop()
 
 	end::renderer_t renderer(main_hwnd);
 	dev_app.AABBSetup();
+	dev_app.ReadVerts();
 
 	// Main application loop:
 	while (true)

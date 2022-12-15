@@ -17,6 +17,8 @@ namespace end
 
 		void AABBSetup();
 
+		void ReadVerts();
+
 		double get_delta_time()const;
 	};
 }
