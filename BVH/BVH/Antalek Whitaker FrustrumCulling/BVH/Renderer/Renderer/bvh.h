@@ -20,7 +20,7 @@ namespace end
 		// TODO: This constructor is the only function for you to implement in this file.
 		bvh_node_t(bvh_node_t* root, uint32_t left_index, uint32_t right_index);
 
-		//bvh_node_t(const aabb_t& bounds, uint32_t id) : _aabb{ bounds }, _id{ id } {}
+		bvh_node_t(const AABB& bounds, uint32_t id) : _aabb{ bounds }, _id{ id } {}
 
 		bvh_node_t() = default;
 		bvh_node_t(const bvh_node_t&) = default;
@@ -74,15 +74,15 @@ namespace end
 			return _parent;
 		}
 
-		/*aabb_t& aabb()
+		AABB& aabb()
 		{
 			return _aabb;
-		}*/
+		}
 
-		/*const aabb_t& aabb()const
+		const AABB& aabb()const
 		{
 			return _aabb;
-		}*/
+		}
 
 	private:
 
@@ -108,7 +108,7 @@ namespace end
 		};
 
 		// AABB for this node
-		//aabb_t _aabb;
+		AABB _aabb;
 	};
 
 	struct bounding_volume_hierarchy_t
@@ -127,7 +127,7 @@ namespace end
 		//a recursive depth-first function could work
 
 		// Add an aabb/element_id pair to the bvh
-		//void insert(const aabb_t& aabb, uint32_t element_id);
+		void insert(const AABB& aabb, uint32_t element_id);
 	};
 
 	// Declares a short-hand alias

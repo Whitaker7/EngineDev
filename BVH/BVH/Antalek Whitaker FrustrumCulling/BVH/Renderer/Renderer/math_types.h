@@ -28,6 +28,17 @@ namespace end
 		}
 	};
 
+	//mine i added to use with the bvh code
+	struct AABB
+	{
+		float xyz[3]; //width height depth 
+		float3 center; //center of mesh
+		float3 extents; //furthest point from center
+		float radius;
+		float4 color;
+		bool collision = false;
+	};
+
 	struct float3
 	{
 		union

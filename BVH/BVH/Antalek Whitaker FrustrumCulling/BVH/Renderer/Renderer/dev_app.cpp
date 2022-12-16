@@ -5,6 +5,9 @@
 #include <DirectXMath.h>
 #include "frustum_culling.h"
 #include <vector>
+#include "math_types.h"
+
+#include "bvh.h"
 
 #include <iostream>
 #include <fstream>
@@ -39,18 +42,7 @@ namespace end
 
 	FRUSTRUM_PLANE frusPlanes[6];
 
-	//i really only need to check the collison on the x and z planes since
-	//there will be no pitch or roll from the player/frustrum
-	struct AABB
-	{
-		float xyz[3]; //width height depth 
-		float3 center; //center of mesh
-		float3 extents; //furthest point from center
-		float radius;
-		float4 color;
-		bool collision = false;
-	};
-
+	//moved struct declaration to math_types.h
 	AABB aabb[6];
 
 	AABB playerAABB{
@@ -106,6 +98,11 @@ namespace end
 	std::vector<QUAD> quads;
 	
 
+
+	void CreateBVH()
+	{
+
+	}
 
 	void ShuffleQuads()
 	{
