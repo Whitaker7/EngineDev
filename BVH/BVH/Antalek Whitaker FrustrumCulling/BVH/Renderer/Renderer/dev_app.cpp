@@ -89,22 +89,45 @@ namespace end
 	//read from bin file
 	std::vector<float3> verts; 
 	int numVerts;
-	
+	struct TRIANGLE
+	{
+		float3 a, b, c;
+	};
+	std::vector<TRIANGLE> triangles;
+
+	void TriangleSetUp()
+	{
+		triangles.resize(numVerts / 3);
+		int j = 0;
+		for (int i = 0; i < verts.capacity() - 2; i+=3)
+		{
+			triangles[j].a = verts[i];
+			triangles[j].b = verts[i + 1];
+			triangles[j].c = verts[i + 2];
+			j++;
+		}
+	}
+
 	void dev_app_t::ReadVerts()
 	{
 		char* buffer = new char[15];
-		std::ifstream terrainFile;
-		terrainFile.open("../../../../terrain.bin");
+		std::ifstream terrainFile("../../../../terrain.bin", std::ios::binary);
+		//terrainFile.open("../../../../terrain.bin");
 		if (terrainFile.is_open())
 		{
 
 			std::cout << "file opened\n";
+			//read initial number of verts
 			terrainFile.read((char*)&numVerts, sizeof(numVerts));
 			//sscanf(buffer, "%d", &numVerts);
 			std::cout << "numVerts: " << numVerts;
 			verts.resize(numVerts);
+			//read all the verts
 			terrainFile.read((char*)verts.data(), sizeof(float3) * numVerts);
+			std::cout << "file read";
 		}
+		terrainFile.close();
+		TriangleSetUp();
 	}
 	
 
@@ -454,6 +477,39 @@ namespace end
 		end::debug_renderer::add_line(float3(-9, 0, 10), float3(-9, 0, -10), color);
 		end::debug_renderer::add_line(float3(-10, 0, 10), float3(-10, 0, -10), color);
 
+	}
+
+	void DrawTriangle(TRIANGLE tri)
+	{
+		end::debug_renderer::add_line(tri.a, tri.b, float4(1.0f, 1.0f, 1.0f, 1.0f));
+		end::debug_renderer::add_line(tri.b, tri.c, float4(1.0f, 1.0f, 1.0f, 1.0f));
+		end::debug_renderer::add_line(tri.c, tri.a, float4(1.0f, 1.0f, 1.0f, 1.0f));
+	}
+
+	void DrawTerrain()
+	{
+
+		for (int i = 0; i < triangles.capacity(); i++)
+		{
+			DrawTriangle(triangles[i]);
+		}
+		/*for (int i = 0; i < verts.capacity() - 7; i +=4)
+		{
+			end::debug_renderer::add_line(verts[i], verts[i + 1], float4(1.0f, 1.0f, 1.0f, 1.0f));
+			end::debug_renderer::add_line(verts[i + 1], verts[i + 2], float4(1.0f, 1.0f, 1.0f, 1.0f));
+			end::debug_renderer::add_line(verts[i + 2], verts[i + 3], float4(1.0f, 1.0f, 1.0f, 1.0f));
+
+			end::debug_renderer::add_line(verts[i + 4], verts[i + 5], float4(1.0f, 1.0f, 1.0f, 1.0f));
+			end::debug_renderer::add_line(verts[i + 5], verts[i + 6], float4(1.0f, 1.0f, 1.0f, 1.0f));
+			end::debug_renderer::add_line(verts[i + 6], verts[i + 3], float4(1.0f, 1.0f, 1.0f, 1.0f));
+		}*/
+		/*end::debug_renderer::add_line(verts[0], verts[1], float4(1.0f, 1.0f, 1.0f, 1.0f));
+		end::debug_renderer::add_line(verts[1], verts[2], float4(1.0f, 1.0f, 1.0f, 1.0f));
+		end::debug_renderer::add_line(verts[2], verts[3], float4(1.0f, 1.0f, 1.0f, 1.0f));
+
+		end::debug_renderer::add_line(verts[4], verts[5], float4(0.0f, 1.0f, 1.0f, 1.0f));
+		end::debug_renderer::add_line(verts[5], verts[6], float4(0.0f, 1.0f, 1.0f, 1.0f));
+		end::debug_renderer::add_line(verts[6], verts[3], float4(0.0f, 1.0f, 1.0f, 1.0f));*/
 	}
 
 	//there be dragons here
@@ -864,8 +920,9 @@ namespace end
 #pragma endregion
 
 		//after moving the player and frustrum let us calculate frustrum collision and draw the aabb's
-		TestAABB();
-		DrawAABB();
+		//TestAABB();
+		//DrawAABB();
+		DrawTerrain();
 
 
 #pragma region LookAt
@@ -892,7 +949,7 @@ namespace end
 
 #pragma endregion
 
-		DrawGrid();
+		//DrawGrid();
 
 		//mouse movement
 		MouseLook(inputPoint, viewM);
