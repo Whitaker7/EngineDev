@@ -9,6 +9,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <random>
 
 //#include <WinUser.h>
 using namespace DirectX;
@@ -105,6 +106,14 @@ namespace end
 	std::vector<QUAD> quads;
 	
 
+
+	void ShuffleQuads()
+	{
+		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+
+		shuffle(quads.begin(), quads.end(), std::default_random_engine(seed));
+
+	}
 	void QuadSetUp()
 	{
 		quads.resize(numVerts / 6);
@@ -139,6 +148,8 @@ namespace end
 			j++;
 
 		}
+		//shuffle them bad boys
+		ShuffleQuads();
 	}
 
 	void dev_app_t::ReadVerts()
@@ -1003,9 +1014,9 @@ namespace end
 		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._41 + player44._31, player44._42, player44._43 + player44._33), float4(0, 0, 1, 1));// z (forward)
 		DrawPlayerAABB(player44);
 
-		for (int i = 0; i < quads.size(); i++)
+		for (QUAD& quad : quads)
 		{
-			DrawAABB(quads[i].aabb);
+			DrawAABB(quad.aabb);
 		}
 
 		//move player based on input
