@@ -123,6 +123,19 @@ namespace end
 			quads[j].aabb.xyz[0] = 1.0f;
 			quads[j].aabb.xyz[1] = 1.0f;
 			quads[j].aabb.xyz[2] = 1.0f;
+			//extents will act as the radius (top down )
+			// the conversions between float3 and xmvectors will be the death of me
+			float3 topCenter = quads[j].aabb.center;
+			topCenter.y = quads[j].aabb.xyz[1];
+			float3 vec3 = float3(quads[j].aabb.center.x - (quads[j].aabb.xyz[0] * 0.5f), quads[j].aabb.xyz[1], quads[j].aabb.center.z + (quads[j].aabb.xyz[2] * 0.5f));
+			XMVECTOR radius = { 0,0,0,0 };
+			XMVECTOR vec_one = *(XMVECTOR*)(&vec3);
+			XMVECTOR vec_two = *(XMVECTOR*)(&topCenter);
+			radius = vec_one - vec_two;
+			radius = XMQuaternionLength(radius);
+
+			quads[j].aabb.extents = *(float3*)(&radius);
+			XMStoreFloat(&quads[j].aabb.radius, radius);
 			j++;
 
 		}
@@ -781,6 +794,19 @@ namespace end
 	void DrawPlayerAABB(XMFLOAT4X4 pos)
 	{
 		playerAABB.center = float3(pos._41, pos._42, pos._43);
+		//extents will act as the radius (top down )
+			// the conversions between float3 and xmvectors will be the death of me
+		float3 topCenter = playerAABB.center;
+		topCenter.y = playerAABB.xyz[1];
+		float3 vec3 = float3(playerAABB.center.x - (playerAABB.xyz[0] * 0.5f), playerAABB.xyz[1], playerAABB.center.z + (playerAABB.xyz[2] * 0.5f));
+		XMVECTOR radius = { 0,0,0,0 };
+		XMVECTOR vec_one = *(XMVECTOR*)(&vec3);
+		XMVECTOR vec_two = *(XMVECTOR*)(&topCenter);
+		radius = vec_one - vec_two;
+		radius = XMQuaternionLength(radius);
+
+		playerAABB.extents = *(float3*)(&radius);
+		XMStoreFloat(&playerAABB.radius, radius);
 
 		DrawAABB(playerAABB);
 	}
