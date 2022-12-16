@@ -1003,6 +1003,11 @@ namespace end
 		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._41 + player44._31, player44._42, player44._43 + player44._33), float4(0, 0, 1, 1));// z (forward)
 		DrawPlayerAABB(player44);
 
+		for (int i = 0; i < quads.size(); i++)
+		{
+			DrawAABB(quads[i].aabb);
+		}
+
 		//move player based on input
 		playerFor = XMVector3Transform(forVec, playerRot); //gets a vector for the "forward" direction 
 		XMStoreFloat3(&transVec3, playerFor);
