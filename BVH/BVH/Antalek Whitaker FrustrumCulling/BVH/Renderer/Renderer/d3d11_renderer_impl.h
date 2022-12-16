@@ -95,8 +95,8 @@ namespace end
 
 			float aspect = view_port[VIEWPORT::DEFAULT].Width / view_port[VIEWPORT::DEFAULT].Height;
 
-			XMVECTOR eyepos = XMVectorSet(0.0f, 15.0f, -15.0f, 1.0f);
-			XMVECTOR focus = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+			XMVECTOR eyepos = XMVectorSet(15.0f, 50.0f, -15.0f, 1.0f);
+			XMVECTOR focus = XMVectorSet(15.0f, 15.0f, 25.0f, 1.0f);
 			XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
 			default_view.view_mat = (float4x4_a&)XMMatrixInverse(nullptr, XMMatrixLookAtLH(eyepos, focus, up));

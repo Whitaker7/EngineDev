@@ -52,6 +52,14 @@ namespace end
 
 	AABB aabb[6];
 
+	AABB playerAABB{
+		{1.0f, 10.0f, 1.0f},
+		float3(0.0f, 0.0f, 0.0f),
+		float3(0.0f, 0.0f, 0.0f),
+		0.0f,
+		float4(1.0f, 0.0f, 0.0f, 1.0f)
+	};
+
 	//mouse movement variables
 	int xPos = 0;
 	int yPos = 0;
@@ -61,15 +69,15 @@ namespace end
 	XMFLOAT4X4 yMouse44;
 	XMVECTOR cameraTrans = XMVectorSet(0, 0, 0, 1);
 	XMVECTOR camFor;
-	XMVECTOR camPos = XMVectorSet(0.0f, 15.0f, -15.0f, 1.0f);
+	XMVECTOR camPos = XMVectorSet(30.0f, 45.0f, -20.0f, 1.0f);
 	XMFLOAT4 camPos4;
 	XMMATRIX totalCamRot;
 	XMMATRIX viewHolder;
 
 	XMMATRIX player = XMMatrixIdentity();
 	XMFLOAT4X4 player44;
-	XMVECTOR playerPos = {0, 0, 0, 0};
-	XMVECTOR transVec = XMVectorSet(0, 0.05f, 0, 1.0f);
+	XMVECTOR playerPos = {30.0f, 16.0f, 0, 0};
+	XMVECTOR transVec = XMVectorSet(30.0f, 16.0f, 0, 1.0f);
 	XMVECTOR forVec = XMVectorSet(0, 0, 1, 0);
 	XMVECTOR upVec = XMVectorSet(0, 1, 0, 0);
 	XMVECTOR playerFor;
@@ -89,22 +97,34 @@ namespace end
 	//read from bin file
 	std::vector<float3> verts; 
 	int numVerts;
-	struct TRIANGLE
+	struct QUAD
 	{
-		float3 a, b, c;
+		float3 a, b, c, x, y, z;
+		AABB aabb;
 	};
-	std::vector<TRIANGLE> triangles;
+	std::vector<QUAD> quads;
+	
 
-	void TriangleSetUp()
+	void QuadSetUp()
 	{
-		triangles.resize(numVerts / 3);
+		quads.resize(numVerts / 6);
 		int j = 0;
-		for (int i = 0; i < verts.capacity() - 2; i+=3)
+		for (int i = 0; i < verts.capacity() - 5; i+=6)
 		{
-			triangles[j].a = verts[i];
-			triangles[j].b = verts[i + 1];
-			triangles[j].c = verts[i + 2];
+			quads[j].a = verts[i];
+			quads[j].b = verts[i + 1];
+			quads[j].c = verts[i + 2];
+			quads[j].x = verts[i + 3];
+			quads[j].y = verts[i + 4];
+			quads[j].z = verts[i + 5];
+			//abcz represent the 4 points of the quad
+			quads[j].aabb.center = (quads[j].a + quads[j].b + quads[j].c + quads[j].z) / 4;
+			quads[j].aabb.color = float4(0.0f, 1.0f, 0.0f, 1.0f);
+			quads[j].aabb.xyz[0] = 1.0f;
+			quads[j].aabb.xyz[1] = 1.0f;
+			quads[j].aabb.xyz[2] = 1.0f;
 			j++;
+
 		}
 	}
 
@@ -127,7 +147,7 @@ namespace end
 			std::cout << "file read";
 		}
 		terrainFile.close();
-		TriangleSetUp();
+		QuadSetUp();
 	}
 	
 
@@ -222,8 +242,49 @@ namespace end
 			aabb[i].color = float4(1.0f, 1.0f, 0, 1.0f);
 		}
 	}
+	
+	void DrawAABB(AABB aabb)
+	{
+		end::debug_renderer::add_line(float3(aabb.center.x - (aabb.xyz[0] * 0.5f), aabb.center.y - (aabb.xyz[1] * 0.75f), aabb.center.z - (aabb.xyz[2] * 0.5f)),
+			float3(aabb.center.x + (aabb.xyz[0] * 0.5f), aabb.center.y - (aabb.xyz[1] * 0.75f), aabb.center.z - (aabb.xyz[2] * 0.5f)),
+			aabb.color);//bottomfront
+		end::debug_renderer::add_line(float3(aabb.center.x - (aabb.xyz[0] * 0.5f), aabb.center.y - (aabb.xyz[1] * 0.75f), aabb.center.z + (aabb.xyz[2] * 0.5f)),
+			float3(aabb.center.x + (aabb.xyz[0] * 0.5f), aabb.center.y - (aabb.xyz[1] * 0.75f), aabb.center.z + (aabb.xyz[2] * 0.5f)),
+			aabb.color);//bottomback
+		end::debug_renderer::add_line(float3(aabb.center.x - (aabb.xyz[0] * 0.5f), aabb.center.y + (aabb.xyz[1] * 0.25f), aabb.center.z - (aabb.xyz[2] * 0.5f)),
+			float3(aabb.center.x + (aabb.xyz[0] * 0.5f), aabb.center.y + (aabb.xyz[1] * 0.25f), aabb.center.z - (aabb.xyz[2] * 0.5f)),
+			aabb.color);//topfront
+		end::debug_renderer::add_line(float3(aabb.center.x - (aabb.xyz[0] * 0.5f), aabb.center.y + (aabb.xyz[1] * 0.25f), aabb.center.z + (aabb.xyz[2] * 0.5f)),
+			float3(aabb.center.x + (aabb.xyz[0] * 0.5f), aabb.center.y + (aabb.xyz[1] * 0.25f), aabb.center.z + (aabb.xyz[2] * 0.5f)),
+			aabb.color);//topback
+		end::debug_renderer::add_line(float3(aabb.center.x - (aabb.xyz[0] * 0.5f), aabb.center.y - (aabb.xyz[1] * 0.75f), aabb.center.z - (aabb.xyz[2] * 0.5f)),
+			float3(aabb.center.x - (aabb.xyz[0] * 0.5f), aabb.center.y + (aabb.xyz[1] * 0.25f), aabb.center.z - (aabb.xyz[2] * 0.5f)),
+			aabb.color);//left front
+		end::debug_renderer::add_line(float3(aabb.center.x - (aabb.xyz[0] * 0.5f), aabb.center.y - (aabb.xyz[1] * 0.75f), aabb.center.z + (aabb.xyz[2] * 0.5f)),
+			float3(aabb.center.x - (aabb.xyz[0] * 0.5f), aabb.center.y + (aabb.xyz[1] * 0.25f), aabb.center.z + (aabb.xyz[2] * 0.5f)),
+			aabb.color);//left back
+		end::debug_renderer::add_line(float3(aabb.center.x + (aabb.xyz[0] * 0.5f), aabb.center.y - (aabb.xyz[1] * 0.75f), aabb.center.z - (aabb.xyz[2] * 0.5f)),
+			float3(aabb.center.x + (aabb.xyz[0] * 0.5f), aabb.center.y + (aabb.xyz[1] * 0.25f), aabb.center.z - (aabb.xyz[2] * 0.5f)),
+			aabb.color);//right front
+		end::debug_renderer::add_line(float3(aabb.center.x + (aabb.xyz[0] * 0.5f), aabb.center.y - (aabb.xyz[1] * 0.75f), aabb.center.z + (aabb.xyz[2] * 0.5f)),
+			float3(aabb.center.x + (aabb.xyz[0] * 0.5f), aabb.center.y + (aabb.xyz[1] * 0.25f), aabb.center.z + (aabb.xyz[2] * 0.5f)),
+			aabb.color);//right back
+		//connectors
+		end::debug_renderer::add_line(float3(aabb.center.x - (aabb.xyz[0] * 0.5f), aabb.center.y + (aabb.xyz[1] * 0.25f), aabb.center.z + (aabb.xyz[2] * 0.5f)),
+			float3(aabb.center.x - (aabb.xyz[0] * 0.5f), aabb.center.y + (aabb.xyz[1] * 0.25f), aabb.center.z - (aabb.xyz[2] * 0.5f)),
+			aabb.color);//left top
+		end::debug_renderer::add_line(float3(aabb.center.x - (aabb.xyz[0] * 0.5f), aabb.center.y - (aabb.xyz[1] * 0.75f), aabb.center.z + (aabb.xyz[2] * 0.5f)),
+			float3(aabb.center.x - (aabb.xyz[0] * 0.5f), aabb.center.y - (aabb.xyz[1] * 0.75f), aabb.center.z - (aabb.xyz[2] * 0.5f)),
+			aabb.color);//left bottom
+		end::debug_renderer::add_line(float3(aabb.center.x + (aabb.xyz[0] * 0.5f), aabb.center.y + (aabb.xyz[1] * 0.25f), aabb.center.z + (aabb.xyz[2] * 0.5f)),
+			float3(aabb.center.x + (aabb.xyz[0] * 0.5f), aabb.center.y + (aabb.xyz[1] * 0.25f), aabb.center.z - (aabb.xyz[2] * 0.5f)),
+			aabb.color);//right top
+		end::debug_renderer::add_line(float3(aabb.center.x + (aabb.xyz[0] * 0.5f), aabb.center.y - (aabb.xyz[1] * 0.75f), aabb.center.z + (aabb.xyz[2] * 0.5f)),
+			float3(aabb.center.x + (aabb.xyz[0] * 0.5f), aabb.center.y - (aabb.xyz[1] * 0.75f), aabb.center.z - (aabb.xyz[2] * 0.5f)),
+			aabb.color);//right bottom
+	}
 
-	void DrawAABB()
+	void DrawAABBS()
 	{
 		for (int i = 0; i < 6; i++)
 		{
@@ -479,19 +540,22 @@ namespace end
 
 	}
 
-	void DrawTriangle(TRIANGLE tri)
+	void DrawQuad(QUAD quad)
 	{
-		end::debug_renderer::add_line(tri.a, tri.b, float4(1.0f, 1.0f, 1.0f, 1.0f));
-		end::debug_renderer::add_line(tri.b, tri.c, float4(1.0f, 1.0f, 1.0f, 1.0f));
-		end::debug_renderer::add_line(tri.c, tri.a, float4(1.0f, 1.0f, 1.0f, 1.0f));
+		end::debug_renderer::add_line(quad.a, quad.b, float4(1.0f, 1.0f, 1.0f, 1.0f));
+		end::debug_renderer::add_line(quad.b, quad.c, float4(1.0f, 1.0f, 1.0f, 1.0f));
+		end::debug_renderer::add_line(quad.c, quad.a, float4(1.0f, 1.0f, 1.0f, 1.0f));
+		end::debug_renderer::add_line(quad.x, quad.y, float4(1.0f, 1.0f, 1.0f, 1.0f));
+		end::debug_renderer::add_line(quad.y, quad.z, float4(1.0f, 1.0f, 1.0f, 1.0f));
+		end::debug_renderer::add_line(quad.z, quad.x, float4(1.0f, 1.0f, 1.0f, 1.0f));
 	}
 
 	void DrawTerrain()
 	{
 
-		for (int i = 0; i < triangles.capacity(); i++)
+		for (int i = 0; i < quads.size(); i++)
 		{
-			DrawTriangle(triangles[i]);
+			DrawQuad(quads[i]);
 		}
 		/*for (int i = 0; i < verts.capacity() - 7; i +=4)
 		{
@@ -714,6 +778,13 @@ namespace end
 		DrawFrustrumNormal();
 	}
 
+	void DrawPlayerAABB(XMFLOAT4X4 pos)
+	{
+		playerAABB.center = float3(pos._41, pos._42, pos._43);
+
+		DrawAABB(playerAABB);
+	}
+
 
 	void dev_app_t::update(view_t& viewM, std::bitset<256> bitTab,int inputPoint[2])
 	{
@@ -904,7 +975,7 @@ namespace end
 		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._41 + player44._11, player44._42, player44._43 + player44._13), float4(1, 0, 0, 1));//x (right)
 		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._41, player44._42 + 1.0f, player44._43), float4(0, 1, 0, 1)); // y (up)
 		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._41 + player44._31, player44._42, player44._43 + player44._33), float4(0, 0, 1, 1));// z (forward)
-
+		DrawPlayerAABB(player44);
 
 		//move player based on input
 		playerFor = XMVector3Transform(forVec, playerRot); //gets a vector for the "forward" direction 
@@ -926,26 +997,26 @@ namespace end
 
 
 #pragma region LookAt
-		//draws lookat
-		XMVECTOR lookAtPos = XMVectorSet(-5.0f, 2.0f, -5.0f, 1);
-		playerPos = XMVectorSet(player44._41, player44._42, player44._43, 0);
+		////draws lookat
+		//XMVECTOR lookAtPos = XMVectorSet(-5.0f, 2.0f, -5.0f, 1);
+		//playerPos = XMVectorSet(player44._41, player44._42, player44._43, 0);
 
-		lookAt = LookAt(lookAtPos, playerPos, upVec);
-		XMStoreFloat4x4(&lookAt44, lookAt);
-		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41 + lookAt44._11, lookAt44._42 + lookAt44._21, lookAt44._43 + lookAt44._31), float4(1, 0, 0, 1));
-		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41 + lookAt44._12, lookAt44._42 + lookAt44._22, lookAt44._43 + lookAt44._32), float4(0, 1, 0, 1));
-		end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41 + lookAt44._13, lookAt44._42 + lookAt44._23, lookAt44._43 + lookAt44._33), float4(0, 0, 1, 1));
+		//lookAt = LookAt(lookAtPos, playerPos, upVec);
+		//XMStoreFloat4x4(&lookAt44, lookAt);
+		//end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41 + lookAt44._11, lookAt44._42 + lookAt44._21, lookAt44._43 + lookAt44._31), float4(1, 0, 0, 1));
+		//end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41 + lookAt44._12, lookAt44._42 + lookAt44._22, lookAt44._43 + lookAt44._32), float4(0, 1, 0, 1));
+		//end::debug_renderer::add_line(float3(lookAt44._41, lookAt44._42, lookAt44._43), float3(lookAt44._41 + lookAt44._13, lookAt44._42 + lookAt44._23, lookAt44._43 + lookAt44._33), float4(0, 0, 1, 1));
 
 #pragma endregion
 
 #pragma region TurnTo
 		//draws turnto
-		XMVECTOR turnToPos = XMVectorSet(5.0f, 2.0f, 5.0f, 1.0f);
+		/*XMVECTOR turnToPos = XMVectorSet(5.0f, 2.0f, 5.0f, 1.0f);
 		turnTo = TurnTo(turnTo, playerPos, delta_time);
 		XMStoreFloat4x4(&turnTo44, turnTo);
 		end::debug_renderer::add_line(float3(turnTo44._41, turnTo44._42, turnTo44._43), float3(turnTo44._41 + turnTo44._11, turnTo44._42 + turnTo44._12, turnTo44._43 + turnTo44._13), float4(1, 0, 0, 1));
 		end::debug_renderer::add_line(float3(turnTo44._41, turnTo44._42, turnTo44._43), float3(turnTo44._41 + turnTo44._21, turnTo44._42 + turnTo44._22, turnTo44._43 + turnTo44._23), float4(0, 1, 0, 1));
-		end::debug_renderer::add_line(float3(turnTo44._41, turnTo44._42, turnTo44._43), float3(turnTo44._41 + turnTo44._31, turnTo44._42 + turnTo44._32, turnTo44._43 + turnTo44._33), float4(0, 0, 1, 1));
+		end::debug_renderer::add_line(float3(turnTo44._41, turnTo44._42, turnTo44._43), float3(turnTo44._41 + turnTo44._31, turnTo44._42 + turnTo44._32, turnTo44._43 + turnTo44._33), float4(0, 0, 1, 1));*/
 
 #pragma endregion
 
