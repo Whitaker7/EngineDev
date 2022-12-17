@@ -50,7 +50,7 @@ namespace end
 		float3(0.0f, 0.0f, 0.0f),
 		float3(0.0f, 0.0f, 0.0f),
 		0.0f,
-		float4(1.0f, 0.0f, 0.0f, 1.0f),
+		float4(0.0f, 1.0f, 0.0f, 1.0f),
 		false,
 		{
 			float4(1.0f, 0, 0, 1.0f),//left wall
@@ -376,18 +376,18 @@ namespace end
 					std::abs(aabb.center.y - playerAABB.center.y) <= ((aabb.xyz[1] * 0.5f) + (playerAABB.xyz[1] * 0.5f)) &&
 					std::abs(aabb.center.z - playerAABB.center.z) <= ((aabb.xyz[2] * 0.5f) + (playerAABB.xyz[2] * 0.5f)))
 				{
-					//aabb.color = float4(1.0f, 0.0f, 0, 1.0f);
+					aabb.color = float4(1.0f, 0.0f, 0, 1.0f);
 					return true;
 				}
 				else
 				{
-					//aabb.color = float4(0.0f, 1.0f, 0, 1.0f);
+					aabb.color = float4(0.0f, 1.0f, 0, 1.0f);
 					return false;
 				}
 			
 		
 	}
-	void RecursiveTest(uint32_t index)
+	void BVHTESTING()
 	{
 		for (int i = 0; i < bvh_obj.bvh.size(); i++)
 		{
@@ -613,12 +613,12 @@ namespace end
 
 	void DrawQuad(QUAD quad)
 	{
-		end::debug_renderer::add_line(quad.a, quad.b, float4(1.0f, 1.0f, 1.0f, 1.0f));
-		end::debug_renderer::add_line(quad.b, quad.c, float4(1.0f, 1.0f, 1.0f, 1.0f));
-		end::debug_renderer::add_line(quad.c, quad.a, float4(1.0f, 1.0f, 1.0f, 1.0f));
-		end::debug_renderer::add_line(quad.x, quad.y, float4(1.0f, 1.0f, 1.0f, 1.0f));
-		end::debug_renderer::add_line(quad.y, quad.z, float4(1.0f, 1.0f, 1.0f, 1.0f));
-		end::debug_renderer::add_line(quad.z, quad.x, float4(1.0f, 1.0f, 1.0f, 1.0f));
+		end::debug_renderer::add_line(quad.a, quad.b, float4(0.0f, 0.0f, 1.0f, 1.0f));
+		end::debug_renderer::add_line(quad.b, quad.c, float4(0.0f, 0.0f, 1.0f, 1.0f));
+		end::debug_renderer::add_line(quad.c, quad.a, float4(0.0f, 0.0f, 1.0f, 1.0f));
+		end::debug_renderer::add_line(quad.x, quad.y, float4(0.0f, 0.0f, 1.0f, 1.0f));
+		end::debug_renderer::add_line(quad.y, quad.z, float4(0.0f, 0.0f, 1.0f, 1.0f));
+		end::debug_renderer::add_line(quad.z, quad.x, float4(0.0f, 0.0f, 1.0f, 1.0f));
 	}
 
 	void DrawTerrain()
@@ -1033,14 +1033,14 @@ namespace end
 		/*for (QUAD& quad : quads)
 		{
 			BVHTestAABB(quad.aabb);
-		}
+		}*/
 
-		for (QUAD& quad : quads)
+		/*for (QUAD& quad : quads)
 		{
 			DrawAABB(quad.aabb);
 		}*/
 
-		RecursiveTest(0);
+		BVHTESTING();
 
 		//move player based on input
 		playerFor = XMVector3Transform(forVec, playerRot); //gets a vector for the "forward" direction 
@@ -1058,6 +1058,8 @@ namespace end
 		//after moving the player and frustrum let us calculate frustrum collision and draw the aabb's
 		//TestAABB();
 		//DrawAABB();
+
+
 		DrawTerrain();
 
 
@@ -1088,7 +1090,7 @@ namespace end
 		//DrawGrid();
 
 		//mouse movement
-		//MouseLook(inputPoint, viewM);
+		MouseLook(inputPoint, viewM);
 
 		WSADMovement(viewM, bitTab);
 

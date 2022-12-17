@@ -28,7 +28,8 @@ namespace end
 
 		float output = finalx + finaly + finalz;
 
-		return output;
+		//return output;
+		return fabsf(a.aabb().center.x - b.aabb().center.x) + fabsf(a.aabb().center.y - b.aabb().center.y) + fabsf(a.aabb().center.z - b.aabb().center.z);
 	}
 
 	void IncreaseBounds(AABB aabb, bvh_node_t& node)
@@ -115,7 +116,7 @@ namespace end
 		//if aabb is further away than the height of the nodes aabb then update the nodes height
 		if (yResult > node.aabb().xyz[1])
 		{
-			node.aabb().xyz[1] = 6;
+			node.aabb().xyz[1] = yResult;
 		}
 
 		//if aabb is further away then the debpth of the nodes aabb then update the nodes depth
@@ -212,7 +213,8 @@ namespace end
 		//Once you have left that while loop, you now hold onto a leaf node index where we will add the node to
 		node.left() = 0;
 		nodeCopy.left() = 0;
-		bvh.push_back(node); bvh.push_back(nodeCopy);
+		bvh.push_back(node);
+		bvh.push_back(nodeCopy);
 		//the 2 new nodes' indices(left and right child) will be the newly created indices once you push back twice on the bvh vector
 		bvh[index].left() = bvh.size() - 1;
 		bvh[index].right() = bvh.size() - 2;
