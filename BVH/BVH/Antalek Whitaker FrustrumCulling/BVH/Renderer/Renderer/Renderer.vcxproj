@@ -104,6 +104,8 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
+      <StackCommitSize>
+      </StackCommitSize>
     </Link>
     <FxCompile>
       <ShaderModel>4.0</ShaderModel>

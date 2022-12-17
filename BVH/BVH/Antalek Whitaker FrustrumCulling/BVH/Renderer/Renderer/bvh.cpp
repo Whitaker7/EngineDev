@@ -33,6 +33,14 @@ namespace end
 
 	void IncreaseBounds(AABB aabb, bvh_node_t& node)
 	{
+		//first see if resizing is needed
+		if (std::abs(aabb.center.x - node.aabb().center.x) <= ((aabb.xyz[0] * 0.5f) + (node.aabb().xyz[0] * 0.5f)) &&
+			std::abs(aabb.center.y - node.aabb().center.y) <= ((aabb.xyz[1] * 0.5f) + (node.aabb().xyz[1] * 0.5f)) &&
+			std::abs(aabb.center.z - node.aabb().center.z) <= ((aabb.xyz[2] * 0.5f) + (node.aabb().xyz[2] * 0.5f)))
+		{
+			//aabb.color = float4(1.0f, 0.0f, 0, 1.0f);
+			return;
+		}
 		//birds eye view
 		//need to move from center to bottom wall (x)
 		//need to check if the aabb is to the left or to the right of the nodeaabb center
@@ -61,21 +69,25 @@ namespace end
 			right = false;
 		}
 
+
+
 		//this determins the y bounds
 		if (node.aabb().center.y <= aabb.center.y) // if node below the aabb
 		{
 			y = node.aabb().center.y - (node.aabb().xyz[1] * 0.5f); // bottom wall of aabb of node
 			float y2 = aabb.center.y + (aabb.xyz[1] * 0.5);// top wall of aabb of node
-			zResult = std::abs(y2 - y);
+			yResult = std::abs(y2 - y);
 			above = false;
 		}
 		else // if node is above the aabb
 		{
-			z = node.aabb().center.y + (node.aabb().xyz[1] * 0.5f); // top wall of aabb of node
+			y = node.aabb().center.y + (node.aabb().xyz[1] * 0.5f); // top wall of aabb of node
 			float y2 = aabb.center.y - (aabb.xyz[1] * 0.5); // bottom wall
-			zResult = std::abs(y2 - y);
+			yResult = std::abs(y2 - y);
 			above = true;
 		}
+
+
 
 		//this determins the z bounds
 		if (node.aabb().center.z <= aabb.center.z) // if node behind the aabb
@@ -99,11 +111,19 @@ namespace end
 			//if the aabb is further away from the node than the nodes aabb width. we need to expand the width to inclue the aabb
 			node.aabb().xyz[0] = xResult;
 		}
+
+		//if aabb is further away than the height of the nodes aabb then update the nodes height
+		if (yResult > node.aabb().xyz[1])
+		{
+			node.aabb().xyz[1] = 6;
+		}
+
 		//if aabb is further away then the debpth of the nodes aabb then update the nodes depth
 		if (zResult > node.aabb().xyz[2])
 		{
 			node.aabb().xyz[2] = zResult;
 		}
+
 
 
 		//now from the outside edge. in by half the width is the new center.
@@ -115,7 +135,7 @@ namespace end
 		{
 			node.aabb().center.z = z + (node.aabb().xyz[2] * 0.5f);
 		}
-		if (above)
+		if (!above)
 		{
 			node.aabb().center.y = y + (node.aabb().xyz[1] * 0.5f);
 		}
@@ -144,7 +164,7 @@ namespace end
 		//if its the first node, it becomes the root. So just push it into bvh vector, then return
 		if (bvh.size() == 0)
 		{
-			//node.is_root();
+			node.is_root();
 			bvh.push_back(node);
 			bool test = node.is_branch();
 			return;

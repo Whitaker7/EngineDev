@@ -8,7 +8,7 @@ namespace
 	// In other words, these variables are global but are only visible in this source file.
 
 	// Maximum number of debug lines at one time (i.e: Capacity)
-	constexpr size_t MAX_LINE_VERTS = 200000; 
+	constexpr size_t MAX_LINE_VERTS = 500000; 
 
 	// CPU-side buffer of debug-line verts
 	// Copied to the GPU and reset every frame.

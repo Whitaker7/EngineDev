@@ -364,7 +364,7 @@ namespace end
 		}
 	}
 
-	void BVHTestAABB(AABB& aabb)
+	bool BVHTestAABB(AABB& aabb)
 	{
 		float3 vec_one;
 		float distance;
@@ -376,14 +376,26 @@ namespace end
 					std::abs(aabb.center.y - playerAABB.center.y) <= ((aabb.xyz[1] * 0.5f) + (playerAABB.xyz[1] * 0.5f)) &&
 					std::abs(aabb.center.z - playerAABB.center.z) <= ((aabb.xyz[2] * 0.5f) + (playerAABB.xyz[2] * 0.5f)))
 				{
-					aabb.color = float4(1.0f, 0.0f, 0, 1.0f);
+					//aabb.color = float4(1.0f, 0.0f, 0, 1.0f);
+					return true;
 				}
 				else
 				{
-					aabb.color = float4(0.0f, 1.0f, 0, 1.0f);
+					//aabb.color = float4(0.0f, 1.0f, 0, 1.0f);
+					return false;
 				}
 			
 		
+	}
+	void RecursiveTest(uint32_t index)
+	{
+		for (int i = 0; i < bvh_obj.bvh.size(); i++)
+		{
+			if (BVHTestAABB(bvh_obj.bvh[i].aabb()))
+			{
+				DrawAABB(bvh_obj.bvh[i].aabb());
+			}
+		}
 	}
 
 	void TestAABB()
@@ -1018,7 +1030,7 @@ namespace end
 		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._41 + player44._31, player44._42, player44._43 + player44._33), float4(0, 0, 1, 1));// z (forward)
 		DrawPlayerAABB(player44);
 		
-		for (QUAD& quad : quads)
+		/*for (QUAD& quad : quads)
 		{
 			BVHTestAABB(quad.aabb);
 		}
@@ -1026,7 +1038,9 @@ namespace end
 		for (QUAD& quad : quads)
 		{
 			DrawAABB(quad.aabb);
-		}
+		}*/
+
+		RecursiveTest(0);
 
 		//move player based on input
 		playerFor = XMVector3Transform(forVec, playerRot); //gets a vector for the "forward" direction 
@@ -1074,7 +1088,7 @@ namespace end
 		//DrawGrid();
 
 		//mouse movement
-		MouseLook(inputPoint, viewM);
+		//MouseLook(inputPoint, viewM);
 
 		WSADMovement(viewM, bitTab);
 
