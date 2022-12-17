@@ -46,12 +46,23 @@ namespace end
 	AABB aabb[6];
 
 	AABB playerAABB{
-		{1.0f, 10.0f, 1.0f},
+		{1.0f, 15.0f, 1.0f},
 		float3(0.0f, 0.0f, 0.0f),
 		float3(0.0f, 0.0f, 0.0f),
 		0.0f,
-		float4(1.0f, 0.0f, 0.0f, 1.0f)
+		float4(1.0f, 0.0f, 0.0f, 1.0f),
+		false,
+		{
+			float4(1.0f, 0, 0, 1.0f),//left wall
+			float4(-1.0f, 0, 0, 1.0f), //right wall
+			float4(0, 1.0f, 0, 1.0f), //bottom
+			float4(0, -1.0f, 0, 1.0f), // top
+			float4(0, 0, 1.0f, 1.0f), // back
+			float4(0, 0, -1.0f, 1.0f), // front
+		}
 	};
+
+
 
 	//mouse movement variables
 	int xPos = 0;
@@ -97,11 +108,13 @@ namespace end
 	};
 	std::vector<QUAD> quads;
 	
-	std::vector<bvh_node_t> bvhNodes;
-
+	bounding_volume_hierarchy_t bvh_obj;
 	void CreateBVH()
 	{
-		//loop through all my quads aabbs
+		for (int i = 0; i < quads.size(); i++)
+		{
+			bvh_obj.insert(quads[i].aabb, i);
+		}
 	}
 
 	void ShuffleQuads()
@@ -147,6 +160,7 @@ namespace end
 		}
 		//shuffle them bad boys
 		ShuffleQuads();
+		CreateBVH();
 	}
 
 	void dev_app_t::ReadVerts()
@@ -350,6 +364,28 @@ namespace end
 		}
 	}
 
+	void BVHTestAABB(AABB& aabb)
+	{
+		float3 vec_one;
+		float distance;
+		int inFront;
+			inFront = 0;
+				vec_one = aabb.center - playerAABB.center;
+				//XMStoreFloat(&distance, XMVector3Dot(*(XMVECTOR*)(&vec_one), *(XMVECTOR*)(&playerAABB.normals[i])));
+				if (std::abs(aabb.center.x - playerAABB.center.x) <= ((aabb.xyz[0] * 0.5f) + (playerAABB.xyz[0] * 0.5f)) &&
+					std::abs(aabb.center.y - playerAABB.center.y) <= ((aabb.xyz[1] * 0.5f) + (playerAABB.xyz[1] * 0.5f)) &&
+					std::abs(aabb.center.z - playerAABB.center.z) <= ((aabb.xyz[2] * 0.5f) + (playerAABB.xyz[2] * 0.5f)))
+				{
+					aabb.color = float4(1.0f, 0.0f, 0, 1.0f);
+				}
+				else
+				{
+					aabb.color = float4(0.0f, 1.0f, 0, 1.0f);
+				}
+			
+		
+	}
+
 	void TestAABB()
 	{
 		float3 vec_one;
@@ -369,15 +405,17 @@ namespace end
 					//increase count of planes object is in front of
 					inFront++;
 				}
-			}
-			//if AABB is infront of all frustrum planes. it is within the frustrum and will be drawn green
-			if (inFront == 6)
-			{
-				aabb[j].color = float4(0.3f, 1.0f, 0, 1.0f);
-			}
-			else
-			{
-				aabb[j].color = float4(1.0f, 1.0f, 0, 1.0f);
+
+
+				//if AABB is infront of all frustrum planes. it is within the frustrum and will be drawn green
+				if (inFront == 6)
+				{
+					aabb[j].color = float4(0.3f, 1.0f, 0, 1.0f);
+				}
+				else
+				{
+					aabb[j].color = float4(1.0f, 1.0f, 0, 1.0f);
+				}
 			}
 		}
 	}
@@ -578,23 +616,6 @@ namespace end
 		{
 			DrawQuad(quads[i]);
 		}
-		/*for (int i = 0; i < verts.capacity() - 7; i +=4)
-		{
-			end::debug_renderer::add_line(verts[i], verts[i + 1], float4(1.0f, 1.0f, 1.0f, 1.0f));
-			end::debug_renderer::add_line(verts[i + 1], verts[i + 2], float4(1.0f, 1.0f, 1.0f, 1.0f));
-			end::debug_renderer::add_line(verts[i + 2], verts[i + 3], float4(1.0f, 1.0f, 1.0f, 1.0f));
-
-			end::debug_renderer::add_line(verts[i + 4], verts[i + 5], float4(1.0f, 1.0f, 1.0f, 1.0f));
-			end::debug_renderer::add_line(verts[i + 5], verts[i + 6], float4(1.0f, 1.0f, 1.0f, 1.0f));
-			end::debug_renderer::add_line(verts[i + 6], verts[i + 3], float4(1.0f, 1.0f, 1.0f, 1.0f));
-		}*/
-		/*end::debug_renderer::add_line(verts[0], verts[1], float4(1.0f, 1.0f, 1.0f, 1.0f));
-		end::debug_renderer::add_line(verts[1], verts[2], float4(1.0f, 1.0f, 1.0f, 1.0f));
-		end::debug_renderer::add_line(verts[2], verts[3], float4(1.0f, 1.0f, 1.0f, 1.0f));
-
-		end::debug_renderer::add_line(verts[4], verts[5], float4(0.0f, 1.0f, 1.0f, 1.0f));
-		end::debug_renderer::add_line(verts[5], verts[6], float4(0.0f, 1.0f, 1.0f, 1.0f));
-		end::debug_renderer::add_line(verts[6], verts[3], float4(0.0f, 1.0f, 1.0f, 1.0f));*/
 	}
 
 	//there be dragons here
@@ -802,20 +823,6 @@ namespace end
 	void DrawPlayerAABB(XMFLOAT4X4 pos)
 	{
 		playerAABB.center = float3(pos._41, pos._42, pos._43);
-		//extents will act as the radius (top down )
-			// the conversions between float3 and xmvectors will be the death of me
-		float3 topCenter = playerAABB.center;
-		topCenter.y = playerAABB.xyz[1];
-		float3 vec3 = float3(playerAABB.center.x - (playerAABB.xyz[0] * 0.5f), playerAABB.xyz[1], playerAABB.center.z + (playerAABB.xyz[2] * 0.5f));
-		XMVECTOR radius = { 0,0,0,0 };
-		XMVECTOR vec_one = *(XMVECTOR*)(&vec3);
-		XMVECTOR vec_two = *(XMVECTOR*)(&topCenter);
-		radius = vec_one - vec_two;
-		radius = XMQuaternionLength(radius);
-
-		playerAABB.extents = *(float3*)(&radius);
-		XMStoreFloat(&playerAABB.radius, radius);
-
 		DrawAABB(playerAABB);
 	}
 
@@ -1010,6 +1017,11 @@ namespace end
 		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._41, player44._42 + 1.0f, player44._43), float4(0, 1, 0, 1)); // y (up)
 		end::debug_renderer::add_line(float3(player44._41, player44._42, player44._43), float3(player44._41 + player44._31, player44._42, player44._43 + player44._33), float4(0, 0, 1, 1));// z (forward)
 		DrawPlayerAABB(player44);
+		
+		for (QUAD& quad : quads)
+		{
+			BVHTestAABB(quad.aabb);
+		}
 
 		for (QUAD& quad : quads)
 		{

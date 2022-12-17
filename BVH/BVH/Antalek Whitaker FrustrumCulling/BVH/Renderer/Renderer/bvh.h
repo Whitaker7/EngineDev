@@ -18,6 +18,8 @@ namespace end
 	{
 
 	public:
+
+
 		// TODO: This constructor is the only function for you to implement in this file.
 		bvh_node_t(bvh_node_t* root, uint32_t left_index, uint32_t right_index);
 
@@ -35,43 +37,43 @@ namespace end
 		
 		inline uint32_t element_id()const 
 		{
-			assert(is_leaf());
+			//assert(is_leaf());
 			return _id; 
 		}
 
 		inline uint32_t& left()
 		{
-			assert(is_branch());
+			//assert(is_branch());
 			return _left;
 		}
 
 		inline uint32_t left()const
 		{
-			assert(is_branch());
+			//assert(is_branch());
 			return _left;
 		}
 
 		inline uint32_t& right()
 		{
-			assert(is_branch());
+			//assert(is_branch());
 			return _right;
 		}
 
 		inline uint32_t right()const
 		{
-			assert(is_branch());
+			//assert(is_branch());
 			return _right;
 		}
 
 		inline uint32_t parent()const
 		{
-			assert(!is_root());
+			//assert(!is_root());
 			return _parent;
 		}
 
 		uint32_t& parent()
 		{
-			assert(!is_root());
+			//assert(!is_root());
 			return _parent;
 		}
 
@@ -126,6 +128,11 @@ namespace end
 		//You will need to create a traversal function to render the aabb's as they collide on the way down
 		//You could create a callback function as well and that function does the collision tests and drawws the aabb lines
 		//a recursive depth-first function could work
+
+		void AABBTest(AABB aabb, AABB player)
+		{
+
+		}
 
 		// Add an aabb/element_id pair to the bvh
 		void insert(const AABB& aabb, uint32_t element_id);

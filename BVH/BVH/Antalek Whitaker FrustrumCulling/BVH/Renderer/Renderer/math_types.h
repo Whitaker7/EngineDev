@@ -269,6 +269,7 @@ namespace end
 		float radius;
 		float4 color;
 		bool collision = false;
+		float4 normals[6];
 	};
 }
 
