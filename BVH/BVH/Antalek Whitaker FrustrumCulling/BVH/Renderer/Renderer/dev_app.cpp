@@ -97,11 +97,11 @@ namespace end
 	};
 	std::vector<QUAD> quads;
 	
-
+	std::vector<bvh_node_t> bvhNodes;
 
 	void CreateBVH()
 	{
-
+		//loop through all my quads aabbs
 	}
 
 	void ShuffleQuads()

@@ -16,6 +16,7 @@ namespace end
 	// A node will always be at a higher index/address than its parent
 	class bvh_node_t 
 	{
+
 	public:
 		// TODO: This constructor is the only function for you to implement in this file.
 		bvh_node_t(bvh_node_t* root, uint32_t left_index, uint32_t right_index);
